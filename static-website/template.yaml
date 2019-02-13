@@ -44,7 +44,7 @@ Resources:
   CertificateManagerCertificate:
     Type: AWS::CertificateManager::Certificate
     Properties:
-      DomainName: !Sub '*.${DomainName}'
+      DomainName: !Ref DomainName
       ValidationMethod: DNS
 
   CloudFrontDistribution:
@@ -95,7 +95,7 @@ Resources:
                 - TLSv1
                 - TLSv1.1
                 - TLSv1.2
-            DomainName: !GetAtt S3BucketLogs.DomainName
+            DomainName: !GetAtt S3BucketRoot.DomainName
             Id: !Sub 'S3-${AWS::StackName}-root'
         PriceClass: PriceClass_All
         ViewerCertificate:
