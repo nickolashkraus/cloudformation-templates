@@ -107,6 +107,15 @@ aws cloudformation create-stack \
 ./static-website/dns-validation.sh $DOMAIN_NAME
 ```
 
+Alternatively, using `deploy`:
+
+```bash
+aws cloudformation deploy \
+--stack-name $STACK_NAME \
+--template-file static-website/template.yaml \
+--parameter-overrides $(cat static-website/parameters.properties)
+```
+
 ### Testing
 
 ```bash
