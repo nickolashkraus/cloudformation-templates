@@ -1,2 +1,5 @@
 # Unix
 *.swp
+
+# Secrets
+*.pem

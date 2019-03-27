@@ -1,0 +1,26 @@
+[
+  {
+    "ParameterKey": "DBName",
+    "ParameterValue": "dbname"
+  },
+  {
+    "ParameterKey": "DBPassword",
+    "ParameterValue": "password"
+  },
+  {
+    "ParameterKey": "DBRootPassword",
+    "ParameterValue": "root"
+  },
+  {
+    "ParameterKey": "DBUser",
+    "ParameterValue": "dbuser"
+  },
+  {
+    "ParameterKey": "InstanceType",
+    "ParameterValue": "t2.small"
+  },
+  {
+    "ParameterKey": "KeyName",
+    "ParameterValue": "lamp-ec2"
+  }
+]
