@@ -1,6 +1,7 @@
 AWSTemplateFormatVersion: '2010-09-09'
 
-Description: LAMP stack using a single EC2 instance and a local MySQL database.
+Description: |
+  A LAMP stack using a single EC2 instance and a local MySQL database.
 
 Mappings:
   AWSInstanceType2Arch:
@@ -280,6 +281,9 @@ Outputs:
   EC2PublicDns:
     Description: Public DNS for the EC2 Instance
     Value: !GetAtt EC2Instance.PublicDnsName
+  WebsiteURL:
+    Description: Website URL for the EC2 Instance
+    Value: !Sub 'http://${EC2Instance.PublicDnsName}'
 
 Parameters:
 
@@ -313,7 +317,7 @@ Parameters:
   DBUser:
     AllowedPattern: '[a-zA-Z][a-zA-Z0-9]*'
     ConstraintDescription: Must begin with a letter and contain only alphanumeric characters.
-    Default: user
+    Default: dbuser
     Description: Username for MySQL database
     MaxLength: '16'
     MinLength: '1'
