@@ -288,9 +288,9 @@ ssh -i lamp-asg/lamp-asg.pem ec2-user@$EC2_PUBLIC_DNS[2]
 ALB_PUBLIC_DNS=$(aws cloudformation describe-stacks \
 --stack-name $STACK_NAME \
 --query 'Stacks[0].Outputs[?OutputKey==`WebsiteURL`].OutputValue' \
-| grep -o -E "[a-zA-Z0-9\.\-]+")
+| grep -o -E "[a-zA-Z0-9\:\/\.\-]+")
 ```
 
 ```bash
-http -v http://$ALB_PUBLIC_DNS
+http -v $ALB_PUBLIC_DNS
 ```
