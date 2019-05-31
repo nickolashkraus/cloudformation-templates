@@ -1,0 +1,30 @@
+[
+  {
+    "ParameterKey": "DBName",
+    "ParameterValue": "dbname"
+  },
+  {
+    "ParameterKey": "DBPassword",
+    "ParameterValue": "password"
+  },
+  {
+    "ParameterKey": "DBUser",
+    "ParameterValue": "dbuser"
+  },
+  {
+    "ParameterKey": "InstanceType",
+    "ParameterValue": "t2.small"
+  },
+  {
+    "ParameterKey": "KeyName",
+    "ParameterValue": "lamp-asg"
+  },
+  {
+    "ParameterKey": "Subnets",
+    "ParameterValue": "subnet-94bae6df,subnet-5e8b0103,subnet-8df9ace9"
+  },
+  {
+    "ParameterKey": "VpcId",
+    "ParameterValue": "vpc-75f0c50d"
+  }
+]
