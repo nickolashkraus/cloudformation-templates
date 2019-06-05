@@ -1,16 +1,16 @@
-# LAMP Stack with ASG
+# Docker Registry with ASG
 
 ## Prerequisites
 
 * Create an EC2 Key Pair:
 
 ```bash
-./lamp-asg/create-key-pair.sh <key-name>
+./docker-registry-asg/create-key-pair.sh <key-name>
 ```
 
 **Note**: Your private key file must be protected from read and write operations from any other users. If your private key can be read or written to by anyone but you, then SSH ignores your key. For this reason, the private key is given `400` permissions.
 
-The key name should also be updated in `lamp-asg/parameters.json` or `lamp-asg/parameters.properties`.
+The key name should also be updated in `docker-registry-asg/parameters.json` or `docker-registry-asg/parameters.properties`.
 
 * Set a CloudFormation stack name:
 
@@ -22,7 +22,7 @@ STACK_NAME=<stack-name>
 
 ```bash
 aws cloudformation validate-template \
---template-body file://lamp-asg/template.yaml
+--template-body file://docker-registry-asg/template.yaml
 ```
 
 ## Deployment
@@ -30,8 +30,8 @@ aws cloudformation validate-template \
 ```bash
 aws cloudformation create-stack \
 --stack-name $STACK_NAME \
---template-body file://lamp-asg/template.yaml \
---parameters file://lamp-asg/parameters.json
+--template-body file://docker-registry-asg/template.yaml \
+--parameters file://docker-registry-asg/parameters.json
 ```
 
 Alternatively, using `deploy`:
@@ -39,8 +39,8 @@ Alternatively, using `deploy`:
 ```bash
 aws cloudformation deploy \
 --stack-name $STACK_NAME \
---template-file lamp-asg/template.yaml \
---parameter-overrides $(cat lamp-asg/parameters.properties)
+--template-file docker-registry-asg/template.yaml \
+--parameter-overrides $(cat docker-registry-asg/parameters.properties)
 ```
 
 ## Testing
@@ -72,28 +72,40 @@ done
 ```
 
 ```bash
-ssh -i lamp-asg/lamp-asg.pem ec2-user@$EC2_PUBLIC_DNS[1]
+ssh -i docker-registry-asg/docker-registry-asg.pem ec2-user@$EC2_PUBLIC_DNS[1]
 ```
 
 ```bash
-ssh -i lamp-asg/lamp-asg.pem ec2-user@$EC2_PUBLIC_DNS[2]
+ssh -i docker-registry-asg/docker-registry-asg.pem ec2-user@$EC2_PUBLIC_DNS[2]
 ```
 
 ```bash
-ssh -i lamp-asg/lamp-asg.pem ec2-user@$EC2_PUBLIC_DNS[...]
+ssh -i docker-registry-asg/docker-registry-asg.pem ec2-user@$EC2_PUBLIC_DNS[...]
 ```
 
 **Note**: To become root, execute `sudo -i`.
 
-* Testing web server:
+* Testing the Docker Registry:
+
+In order to log in to the Docker Registry, you will need to add the registry to your list of insecure registries.
+
+To do this, go **Preference** > **Daemon** > and add `<alb-public-dns:port>` to **Insecure registries:**.
+
+**Example**: `docke-Elast-18NDH1RQVI5LH-1208128074.us-east-1.elb.amazonaws.com:80`
 
 ```bash
 ALB_PUBLIC_DNS=$(aws cloudformation describe-stacks \
 --stack-name $STACK_NAME \
---query 'Stacks[0].Outputs[?OutputKey==`WebsiteURL`].OutputValue' \
+--query 'Stacks[0].Outputs[?OutputKey==`ALBPublicDNS`].OutputValue' \
 | grep -o -E "[a-zA-Z0-9\:\/\.\-]+")
 ```
 
 ```bash
-http -v $ALB_PUBLIC_DNS
+docker login $ALB_PUBLIC_DNS:80
+echo "FROM alpine" > Dockerfile
+docker build -t alpine:latest .
+docker tag alpine $ALB_PUBLIC_DNS:80/alpine
+docker push $ALB_PUBLIC_DNS:80/alpine
+docker pull $ALB_PUBLIC_DNS:80/alpine
+rm Dockerfile
 ```
