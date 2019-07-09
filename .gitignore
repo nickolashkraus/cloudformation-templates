@@ -1,5 +1,8 @@
 # Unix
 *.swp
 
+# macOS
+.DS_STORE
+
 # Secrets
 *.pem
