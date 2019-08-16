@@ -45,6 +45,14 @@ aws cloudformation deploy \
 --parameter-overrides $(cat static-website/parameters.properties)
 ```
 
+## DNS Validation
+
+To automate DNS validation, run the following script:
+
+```bash
+./static-website/dns-validation.sh $DOMAIN_NAME $STACK_NAME
+```
+
 ## Testing
 
 ```bash

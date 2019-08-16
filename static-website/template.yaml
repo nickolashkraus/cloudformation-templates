@@ -53,7 +53,6 @@ Resources:
       DistributionConfig:
         Aliases:
           - !Ref DomainName
-          - !Sub 'www.${DomainName}'
         CustomErrorResponses:
           - ErrorCachingMinTTL: 60
             ErrorCode: 404
