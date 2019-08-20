@@ -32,10 +32,6 @@ aws cloudformation create-stack \
 --parameters file://static-website/parameters.json
 ```
 
-```bash
-./static-website/dns-validation.sh $DOMAIN_NAME
-```
-
 Alternatively, using `deploy`:
 
 ```bash
