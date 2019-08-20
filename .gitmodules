@@ -1,0 +1,3 @@
+[submodule "static-website-hugo/site/themes/black-and-light-2"]
+	path = static-website-hugo/site/themes/black-and-light-2
+	url = git@github.com:NickolasHKraus/black-and-light-2

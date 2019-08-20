@@ -1,0 +1,29 @@
+baseURL = "https://static-website.com/"
+languageCode = "en-us"
+title = "Static Website Hugo"
+author = "Nickolas Kraus"
+canonifyurls = true
+theme = "black-and-light-2"
+
+pygmentsStyle       = "tango"
+pygmentsCodeFences  = true
+
+googleAnalytics = ""
+
+[params]
+  siteName = "Static Website Hugo"
+  dateFormat = "January 2, 2006"
+
+[[params.social]]
+  email = "nickhkraus@gmail.com"
+  github = "https://github.com/NickolasHKraus"
+  linkedin = "https://linkedin.com/in/nickolas-kraus"
+  stackoverflow = "https://stackoverflow.com/users/9659079/nickolashkraus"
+  twitter = "https://twitter.com/NickolasHKraus"
+
+[[menu.main]]
+    name = "About"
+    url  = "/about"
+[[menu.main]]
+    name = "Articles"
+    url  = "/articles"
