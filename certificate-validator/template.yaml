@@ -1,0 +1,28 @@
+AWSTemplateFormatVersion: '2010-09-09'
+
+Description: Certificate Validator
+
+Parameters:
+  DomainName:
+    Description: Domain name for the certificate
+    Type: String
+  ServiceToken:
+    Description: AWS Lambda function ARN
+    Type: String
+
+Resources:
+
+  Certificate:
+    Type: Custom::Certificate
+    Properties:
+      ServiceToken: !Ref ServiceToken
+      DomainName: !Ref DomainName
+      SubjectAlternativeNames:
+        - !Sub 'www.${DomainName}'
+      ValidationMethod: DNS
+
+  CertificateValidator:
+    Type: Custom::CertificateValidator
+    Properties:
+      ServiceToken: !Ref ServiceToken
+      CertificateArn: !GetAtt Certificate.CertificateArn
