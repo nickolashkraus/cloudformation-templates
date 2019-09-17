@@ -19,7 +19,6 @@ Resources:
       DomainName: !Ref DomainName
       SubjectAlternativeNames:
         - !Sub 'www.${DomainName}'
-      ValidationMethod: DNS
 
   CertificateValidator:
     Type: Custom::CertificateValidator
