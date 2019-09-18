@@ -1,0 +1,10 @@
+[
+  {
+    "ParameterKey": "DomainName",
+    "ParameterValue": "static-website.com"
+  },
+  {
+    "ParameterKey": "ServiceToken",
+    "ParameterValue": "arn:aws:lambda:us-east-1:185444048157:function:certificate-validator-dev-main"
+  }
+]
