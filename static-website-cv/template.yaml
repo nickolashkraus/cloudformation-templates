@@ -1,6 +1,6 @@
 AWSTemplateFormatVersion: '2010-09-09'
 
-Description: Static Website with Certificate Validator
+Description: Static website with Certificate Validator
 
 Parameters:
   DomainName:
