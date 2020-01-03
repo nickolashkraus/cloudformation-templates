@@ -1,0 +1,579 @@
+AWSTemplateFormatVersion: '2010-09-09'
+
+Description: CI/CD
+
+Resources:
+
+  CodeCommitS3Bucket:
+    # Reference:
+    # [`AWS::S3::Bucket`][s3-bucket]
+    Type: AWS::S3::Bucket
+    DeletionPolicy: Delete
+    Properties:
+      # Note: Amazon S3 bucket names must be globally unique.
+      BucketName: !Sub '${AWS::StackName}-s3-codecommit-code'
+
+  CodeCommitRepository:
+    # Reference:
+    # [`AWS::CodeCommit::Repository`][codecommit-repository]
+    Type: AWS::CodeCommit::Repository
+    Properties:
+      # Information about code to be committed to a repository after it is
+      # created in an AWS CloudFormation stack.
+      Code:
+        # Information about the Amazon S3 bucket that contains a ZIP file of
+        # code to be committed to the repository.
+        S3:
+          Bucket: !Ref CodeCommitS3Bucket
+          Key: code.zip
+          # ObjectVersion: String
+      RepositoryDescription: !Sub 'CodeCommit repository for ${AWS::StackName}'
+      RepositoryName: !Ref AWS::StackName
+      # Tags:
+      #   - Tag
+      # You can configure a CodeCommit repository so that code pushes or other
+      # events trigger actions, such as sending a notification from Amazon
+      # Simple Notification Service (Amazon SNS) or invoking a function in AWS
+      # Lambda.
+      # Reference:
+      # [Manage Triggers for an AWS CodeCommit Repository][codecommit-how-to-notify]
+      # Triggers:
+      #   - RepositoryTrigger
+
+  CloudWatchEventsServiceRole:
+    # Reference:
+    # [`AWS::IAM::Role`][iam-role]
+    Type: AWS::IAM::Role
+    Properties:
+      # The trust policy that is associated with this role. Trust policies
+      # define which entities can assume the role.
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Action: ['sts:AssumeRole']
+            Effect: Allow
+            Principal:
+              Service: [events.amazonaws.com]
+      Description: !Sub 'Service role for Amazon CloudWatch Events for ${AWS::StackName}'
+      # ManagedPolicyArns:
+      #   - String
+      # The maximum session duration (in seconds) that you want to set for the
+      # specified role. If you do not specify a value for this setting, the
+      # default maximum of one hour is applied. This setting can have a value
+      # from 1 hour to 12 hours.
+      # MaxSessionDuration: Integer
+      # The path to the role. This parameter is optional. If it is not
+      # included, it defaults to a slash (/).
+      Path: /
+      # PermissionsBoundary: String
+      # Adds or updates an inline policy document that is embedded in the
+      # specified IAM role.
+      Policies:
+        - PolicyName: CodePipelineAccess
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Action:
+                - codepipeline:StartPipelineExecution
+                Effect: Allow
+                Resource: !Sub 'arn:aws:codepipeline:${AWS::Region}:${AWS::AccountId}:${CodePipelinePipeline}'
+      RoleName: !Sub '${AWS::StackName}-cloudwatch-events-service-role'
+      # Tags:
+      #   - Tag
+
+  CloudWatchEventsRule:
+    # Reference:
+    # [`AWS::Events::Rule`][events-rule]
+    DependsOn: CloudWatchEventsServiceRole
+    Type: AWS::Events::Rule
+    Properties:
+      Description: !Sub 'CloudWatch Event rule for ${AWS::StackName}'
+      # EventBusName: String
+      # Describes which events are routed to the specified target.
+      # When using CloudFormation, you must enclose each part of the event
+      # pattern in square brackets.
+      EventPattern:
+        source: [aws.codecommit]
+        detail-type: [CodeCommit Repository State Change]
+        resources: [!GetAtt CodeCommitRepository.Arn]
+        detail:
+          event:
+            - referenceCreated
+            - referenceUpdated
+          referenceType: [branch]
+          referenceName: [master]
+      Name: !Sub '${AWS::StackName}-cloudwatch-events-rule'
+      # The Amazon Resource Name (ARN) of the role that is used for target
+      # invocation.
+      RoleArn: !GetAtt CloudWatchEventsServiceRole.Arn
+      # ScheduleExpression: String
+      # Indicates whether the rule is enabled.
+      State: ENABLED
+      # The AWS resources that are invoked when the rule is triggered.
+      Targets:
+        # Reference:
+        # [`AWS::Events::Rule Target`][events-rule-target]
+        # The Amazon Resource Name (ARN) of the target.
+        - Arn: !Sub 'arn:aws:codepipeline:${AWS::Region}:${AWS::AccountId}:${CodePipelinePipeline}'
+          # EcsParameters:
+          #   EcsParameters
+          # A name for the target.
+          Id: !Sub '${AWS::StackName}-cloudwatch-events-rule-target'
+          # Input: String
+          # InputPath: String
+          # InputTransformer:
+          #   InputTransformer
+          # KinesisParameters:
+          #   KinesisParameters
+          # The Amazon Resource Name (ARN) of the IAM role to be used for this
+          # target when the rule is triggered.
+          RoleArn: !GetAtt CloudWatchEventsServiceRole.Arn
+          # RunCommandParameters:
+          #   RunCommandParameters
+          # SqsParameters:
+          #   SqsParameters
+
+  ArtifactStoreS3Bucket:
+    # Reference:
+    # [`AWS::S3::Bucket`][s3-bucket]
+    Type: AWS::S3::Bucket
+    DeletionPolicy: Delete
+    Properties:
+      # Note: Amazon S3 bucket names must be globally unique.
+      BucketName: !Sub '${AWS::StackName}-s3-artifact-store'
+
+  CodePipelineServiceRole:
+    # Reference:
+    # [`AWS::IAM::Role`][iam-role]
+    Type: AWS::IAM::Role
+    Properties:
+      # The trust policy that is associated with this role. Trust policies
+      # define which entities can assume the role.
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Action: ['sts:AssumeRole']
+            Effect: Allow
+            Principal:
+              Service: [codepipeline.amazonaws.com]
+      Description: !Sub 'Service role for AWS CodePipeline for ${AWS::StackName}'
+      # ManagedPolicyArns:
+      #   - String
+      # The maximum session duration (in seconds) that you want to set for the
+      # specified role. If you do not specify a value for this setting, the
+      # default maximum of one hour is applied. This setting can have a value
+      # from 1 hour to 12 hours.
+      # MaxSessionDuration: Integer
+      # The path to the role. This parameter is optional. If it is not
+      # included, it defaults to a slash (/).
+      Path: /
+      # PermissionsBoundary: String
+      # Adds or updates an inline policy document that is embedded in the
+      # specified IAM role.
+      Policies:
+        - PolicyName: CodeBuildFullAccess
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Action:
+                - codebuild:*
+                Effect: Allow
+                Resource:
+                  - !GetAtt CodeBuildProject.Arn
+        - PolicyName: CodeCommitFullAccess
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Action:
+                - codecommit:*
+                Effect: Allow
+                Resource:
+                  - !GetAtt CodeCommitRepository.Arn
+        - PolicyName: S3FullAccess
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Action:
+                - s3:*
+                Effect: Allow
+                Resource:
+                  - !GetAtt ArtifactStoreS3Bucket.Arn
+                    # Note: Must specify object resource ARN for actions
+                    # performed on S3 objects.
+                    # Amazon S3 object ARN: arn:${Partition}:s3:::${BucketName}/${ObjectName}
+                  - !Sub '${ArtifactStoreS3Bucket.Arn}/*'
+      RoleName: !Sub '${AWS::StackName}-codepipeline-service-role'
+      # Tags:
+      #   - Tag
+
+  CodePipelinePipeline:
+    # Reference:
+    # [`AWS::CodePipeline::Pipeline`][codepipeline-pipeline]
+    DependsOn:
+      - CodeCommitRepository
+      - CodeBuildProject
+    Type: AWS::CodePipeline::Pipeline
+    Properties:
+      ArtifactStore:
+          # If this is undefined, the default key for Amazon S3 is used.
+          # EncryptionKey:
+          #   EncryptionKey
+          Location: !Ref ArtifactStoreS3Bucket
+          Type: S3
+      # DisableInboundStageTransitions:
+      #   - StageTransition
+      Name: !Sub '${AWS::StackName}-codepipeline-pipeline'
+      RestartExecutionOnUpdate: false
+      RoleArn: !GetAtt CodePipelineServiceRole.Arn
+      Stages:
+        - Name: Source
+          # Reference:
+          # [`AWS::CodePipeline::Pipeline ActionDeclaration`][codepipeline-pipeline-stages-actions]
+          Actions:
+              # An action type consists of an action category and provider
+              # type. The following are the valid action categories:
+              #   - Source
+              #   - Build
+              #   - Test
+              #   - Deploy
+              #   - Approval
+              #   - Invoke
+              # Each action category has a designated set of providers. A list
+              # of valid providers by action type can be found
+              # [here][codepipeline-actions-valid-providers].
+              #
+              # Reference:
+              # [`AWS::CodePipeline::Pipeline ActionTypeId`][codepipeline-action-type-id]
+            - ActionTypeId:
+                Category: Source
+                Owner: AWS
+                Provider: CodeCommit
+                Version: 1
+              # The action's configuration. These are key-value pairs that
+              # specify input values for an action. The values can be
+              # represented in either JSON or YAML format.
+              Configuration:
+                BranchName: master
+                # When you add event-based change detection, you must add the
+                # parameter to your output and set it to false to disable
+                # polling. Otherwise, your pipeline starts twice for a single
+                # source change.
+                PollForSourceChanges: false
+                RepositoryName: !GetAtt CodeCommitRepository.Name
+              # The input artifact of an action must exactly match the output
+              # artifact declared in a preceding action, but the input artifact
+              # does not have to be the next action in strict sequence from the
+              # action that provided the output artifact. Actions in parallel
+              # can declare different output artifacts, which are in turn
+              # consumed by different following actions.
+              # InputArtifacts:
+              #   - InputArtifact
+              Name: Source
+              # Output artifact names must be unique within a pipeline.
+              OutputArtifacts:
+                - Name: SOURCE
+              Region: !Ref AWS::Region
+              # This is assumed through the RoleArn for the pipeline.
+              # RoleArn: String
+              RunOrder: 1
+        - Name: Build
+          Actions:
+            - ActionTypeId:
+                Category: Build
+                Owner: AWS
+                # Allows you to run builds and tests as part of your pipeline.
+                # When you run a CodeBuild build or test action, commands
+                # specified in the build spec are run inside of a CodeBuild
+                # container. All artifacts that are specified as input
+                # artifacts to a CodeBuild action are available inside of the
+                # container running the commands.
+                #
+                # Reference:
+                # [Action Structure Reference - CodeBuild][codepipeline-action-reference-codebuild]
+                Provider: CodeBuild
+                Version: 1
+              Configuration:
+                # ProjectName is the name of the build project in CodeBuild.
+                # This parameter is required.
+                ProjectName: !Ref CodeBuildProject
+                # When there is only one source artifact for the action, the
+                # PrimarySource artifact defaults to that artifact.
+                # PrimarySource: SOURCE
+              # CodeBuild looks for the build spec file and runs the build spec
+              # commands from the directory of the primary source artifact.
+              # Each input artifact is extracted to its own directory, the
+              # locations of which are stored in environment variables. The
+              # directory for the primary source artifact is made available
+              # with `$CODEBUILD_SRC_DIR`.
+              InputArtifacts:
+                - Name: SOURCE
+              Name: Build
+              # OutputArtifacts:
+              #   - OutputArtifact
+              Region: !Ref AWS::Region
+              # This is assumed through the RoleArn for the pipeline.
+              # RoleArn: String
+              RunOrder: 1
+
+  CodeBuildServiceRole:
+    # Reference:
+    # [`AWS::IAM::Role`][iam-role]
+    Type: AWS::IAM::Role
+    Properties:
+      # The trust policy that is associated with this role. Trust policies
+      # define which entities can assume the role.
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Action: ['sts:AssumeRole']
+            Effect: Allow
+            Principal:
+              Service: [codebuild.amazonaws.com]
+      Description: !Sub 'Service role for AWS CodeBuild for ${AWS::StackName}'
+      # ManagedPolicyArns:
+      #   - String
+      # The maximum session duration (in seconds) that you want to set for the
+      # specified role. If you do not specify a value for this setting, the
+      # default maximum of one hour is applied. This setting can have a value
+      # from 1 hour to 12 hours.
+      # MaxSessionDuration: Integer
+      # The path to the role. This parameter is optional. If it is not
+      # included, it defaults to a slash (/).
+      Path: /
+      # PermissionsBoundary: String
+      # Adds or updates an inline policy document that is embedded in the
+      # specified IAM role.
+      Policies:
+        - PolicyName: S3FullAccess
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Action:
+                - s3:*
+                Effect: Allow
+                Resource:
+                  - !GetAtt ArtifactStoreS3Bucket.Arn
+                    # Note: Must specify object resource ARN for actions
+                    # performed on S3 objects.
+                    # Amazon S3 object ARN: arn:${Partition}:s3:::${BucketName}/${ObjectName}
+                  - !Sub '${ArtifactStoreS3Bucket.Arn}/*'
+        - PolicyName: CloudWatchLogsAccess
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Action:
+                - logs:CreateLogGroup
+                - logs:CreateLogStream
+                - logs:DeleteLogGroup
+                - logs:PutLogEvents
+                Effect: Allow
+                Resource: !Sub 'arn:aws:logs:${AWS::Region}:${AWS::AccountId}:*'
+      RoleName: !Sub '${AWS::StackName}-codebuild-service-role'
+      # Tags:
+      #   - Tag
+
+  CodeBuildProject:
+    # Reference:
+    # [`AWS::CodeBuild::Project`][codebuild-project]
+    Type: AWS::CodeBuild::Project
+    Properties:
+      # Reference:
+      # [`AWS::CodeBuild::Project Artifacts`][codebuild-project-artifacts]
+      Artifacts:
+        # ArtifactIdentifier: String
+        # This option is valid only if your artifacts type is `S3`. If this is
+        # set with another artifacts type, an InvalidInputException is thrown.
+        # EncryptionDisabled: Boolean
+        # Information about the build output artifact location:
+        #   - If type is set to `CODEPIPELINE`, AWS CodePipeline ignores this
+        #     value if specified. This is because AWS CodePipeline manages its
+        #     build output locations instead of AWS CodeBuild.
+        # Location: String
+        # Along with `NamespaceType` and `Path`, the pattern that AWS CodeBuild
+        # uses to name and store the output artifact:
+        #   - If type is set to `CODEPIPELINE`, AWS CodePipeline ignores this
+        #     value if specified. This is because AWS CodePipeline manages its
+        #     build output names instead of AWS CodeBuild.
+        # Name: String
+        # Along with `Name` and `Path`, the pattern that AWS CodeBuild
+        # uses to name and store the output artifact:
+        #   - If type is set to `CODEPIPELINE`, AWS CodePipeline ignores this
+        #     value if specified. This is because AWS CodePipeline manages its
+        #     build output names instead of AWS CodeBuild.
+        # NamespaceType: String
+        # If set to true a name specified in the buildspec file overrides the
+        # artifact name. The name specified in a buildspec file is calculated
+        # at build time and uses the Shell command language. For example, you
+        # can append a date and time to your artifact name so that it is always
+        # unique.
+        # OverrideArtifactName: Boolean
+        # The type of build output artifact to create:
+        #   - If type is set to `CODEPIPELINE`, AWS CodePipeline ignores this
+        #     value if specified. This is because AWS CodePipeline manages its
+        #     build output artifacts instead of AWS CodeBuild.
+        # Packaging: String
+        # Along with `Name` and `NamespaceType`, the pattern that AWS CodeBuild
+        # uses to name and store the output artifact:
+        #   - If type is set to `CODEPIPELINE`, AWS CodePipeline ignores this
+        #     value if specified. This is because AWS CodePipeline manages its
+        #     build output names instead of AWS CodeBuild.
+        # Path: String
+        # The type of build output artifact. Valid values include:
+        #   - CODEPIPELINE: The build project has build output generated
+        #     through AWS CodePipeline.
+        Type: CODEPIPELINE
+      # Note: Including build badges with your project is currently not
+      # supported if the source type is CodePipeline. If you specify
+      # CODEPIPELINE for the Source property, do not specify the BadgeEnabled
+      # property.
+      # BadgeEnabled: Boolean
+      # ProjectCache is a property of the AWS CodeBuild Project resource that
+      # specifies information about the cache for the build project. If
+      # ProjectCache is not specified, then both of its properties default to
+      # NO_CACHE.
+      # Cache:
+      #   ProjectCache
+      Description: !Sub 'CodeBuild project for testing and building ${AWS::StackName}'
+      # The alias or Amazon Resource Name (ARN) of the AWS Key Management
+      # Service (AWS KMS) customer master key (CMK) that CodeBuild uses to
+      # encrypt the build output. If you don't specify a value, CodeBuild uses
+      # the AWS-managed CMK for Amazon Simple Storage Service (Amazon S3).
+      # EncryptionKey: String
+      # Environment is a property of the AWS::CodeBuild::Project resource that
+      # specifies the environment for an AWS CodeBuild project.
+      #
+      # Reference:
+      # [`AWS::CodeBuild::Project Environment`][codebuild-project-environment]
+      Environment:
+        # Certificate: String
+        # The type of compute environment. This determines the number of CPU
+        # cores and memory the build environment uses. Available values
+        # include:
+        #   - BUILD_GENERAL1_SMALL: Use up to 3 GB memory and 2 vCPUs for
+        #     builds.
+        #   - BUILD_GENERAL1_MEDIUM: Use up to 7 GB memory and 4 vCPUs for
+        #     builds.
+        #   - BUILD_GENERAL1_LARGE: Use up to 15 GB memory and 8 vCPUs for
+        #     builds.
+        ComputeType: BUILD_GENERAL1_SMALL
+        # A set of environment variables to make available to builds for this
+        # build project.
+        # EnvironmentVariables:
+        # The image tag or image digest that identifies the Docker image to use
+        # for this build project.
+        Image: aws/codebuild/standard:2.0
+        # The type of credentials AWS CodeBuild uses to pull images in your
+        # build.
+        #   - CODEBUILD specifies that AWS CodeBuild uses its own credentials.
+        #     This requires that you modify your ECR repository policy to trust
+        #     AWS CodeBuild's service principal.
+        #   - SERVICE_ROLE specifies that AWS CodeBuild uses your build
+        #     project's service role.
+        # When you use a cross-account or private registry image, you must use
+        # SERVICE_ROLE credentials. When you use an AWS CodeBuild curated
+        # image, you must use CODEBUILD credentials.
+        ImagePullCredentialsType: CODEBUILD
+        # Enables running the Docker daemon inside a Docker container. Set to
+        # true only if the build project is used to build Docker images.
+        # Otherwise, a build that attempts to interact with the Docker daemon
+        # fails.
+        PrivilegedMode: false
+        # RegistryCredential specifies information about credentials that
+        # provide access to a private Docker registry. When this is set:
+        #   - ImagePullCredentialsType must be set to SERVICE_ROLE.
+        #   - Images cannot be curated or an Amazon ECR image.
+        # RegistryCredential:
+        #   RegistryCredential
+        # The type of build environment to use for related builds.
+        Type: LINUX_CONTAINER
+      # LogsConfig:
+      #   LogsConfig
+      # The name of the build project. The name must be unique across all of
+      # the projects in your AWS account.
+      Name: !Sub '${AWS::StackName}-build'
+      # The number of minutes a build is allowed to be queued before it times
+      # out.
+      QueuedTimeoutInMinutes: 60
+      # SecondaryArtifacts:
+      #   - Artifacts
+      # SecondarySources:
+      #   - Source
+      # SecondarySourceVersions:
+      #   - ProjectSourceVersion
+      # The ARN of the AWS Identity and Access Management (IAM) role that
+      # enables AWS CodeBuild to interact with dependent AWS services on behalf
+      # of the AWS account.
+      ServiceRole: !Ref CodeBuildServiceRole
+      # Source is a property of the AWS::CodeBuild::Project resource that
+      # specifies the source code settings for the project, such as the source
+      # code's repository type and location.
+      #
+      # Reference:
+      # [AWS::CodeBuild::Project Source][codebuild-project-source]
+      Source:
+        # Auth:
+        #   SourceAuth
+        # The build specification for the project. If this value is not
+        # provided, then the source code must contain a buildspec file named
+        # buildspec.yml at the root level. If this value is provided, it can be
+        # either a single string containing the entire build specification, or
+        # the path to an alternate buildspec file relative to the value of the
+        # built-in environment variable CODEBUILD_SRC_DIR.
+        BuildSpec: codebuild/buildspec.yml
+        # The depth of history to download. Minimum value is 0. If this value
+        # is 0, greater than 25, or not provided, then the full history is
+        # downloaded with each build project.
+        GitCloneDepth: 1
+        # GitSubmodulesConfig:
+        #   GitSubmodulesConfig
+        # InsecureSsl: Boolean
+        # Information about the location of the source code to be built.
+        # For source code settings that are specified in the source action of a
+        # pipeline in AWS CodePipeline, location should not be specified. If it
+        # is specified, AWS CodePipeline ignores it. This is because AWS
+        # CodePipeline uses the settings in a pipeline's source action instead
+        # of this value. If you specify CODEPIPELINE for the Type property,
+        # don't specify this property.
+        # Location: String
+        # Set to true to report the status of a build's start and finish to
+        # your source provider. This option is valid only when your source
+        # provider is GitHub, GitHub Enterprise, or Bitbucket. If this is set
+        # and you use a different source provider, an InvalidInputException is
+        # thrown.
+        # ReportBuildStatus: Boolean
+        # SourceIdentifier: String
+        # The type of repository that contains the source code to be built.
+        # Valid values include:
+        #   - CODEPIPELINE: The source code settings are specified in the
+        #     source action of a pipeline in AWS CodePipeline.
+        Type: CODEPIPELINE
+      # SourceVersion: String
+      # Tags:
+      #   - Tag
+      # How long, in minutes, from 5 to 480 (8 hours), for AWS CodeBuild to
+      # wait before timing out any related build that did not get marked as
+      # completed. The default is 60 minutes.
+      TimeoutInMinutes: 60
+      # Triggers:
+      #   ProjectTriggers
+      # VpcConfig:
+      #   VpcConfig
+
+# References
+#
+# [codebuild-project-artifacts]: https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-codebuild-project-artifacts.html
+# [codebuild-project-environment]: https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-codebuild-project-environment.html
+# [codebuild-project-source]: https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-codebuild-project-source.html
+# [codebuild-project]: https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-codebuild-project.html
+# [codecommit-how-to-notify]: https://docs.aws.amazon.com/codecommit/latest/userguide/how-to-notify.html
+# [codecommit-repository]: https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-codecommit-repository.html
+# [codepipeline-pipeline-stages-actions]: https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-codepipeline-pipeline-stages-actions.html
+# [codepipeline-action-reference-codebuild]: https://docs.aws.amazon.com/codepipeline/latest/userguide/codepipeline-action-reference-codebuild.html
+# [codepipeline-action-type-id]: https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-codepipeline-pipeline-stages-actions-codepipeline-action-type-id.html
+# [codepipeline-actions-valid-providers]: https://docs.aws.amazon.com/codepipeline/latest/userguide/reference-pipeline-structure.html#codepipeline-actions-valid-providers
+# [codepipeline-pipeline]: https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-codepipeline-pipeline.html
+# [events-rule-target]: https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-events-rule-target.html
+# [events-rule]: https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-events-rule.html
+# [iam-policy]: https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-iam-policy.html
+# [iam-role]: https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-iam-role.html
+# [s3-bucket]: https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-s3-bucket.html

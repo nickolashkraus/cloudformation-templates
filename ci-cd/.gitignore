@@ -1,0 +1,10 @@
+# Artifacts
+.cloudformation/
+code/
+code.zip
+
+# OS X
+.DS_Store
+
+# Unix
+*.swp
