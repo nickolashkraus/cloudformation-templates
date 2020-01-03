@@ -1,0 +1,418 @@
+AWSTemplateFormatVersion: '2010-09-09'
+
+Description: CI/CD
+
+Resources:
+
+  CodeCommitS3Bucket:
+    Type: AWS::S3::Bucket
+    DeletionPolicy: Delete
+    Properties:
+      BucketName: !Sub '${AWS::StackName}-s3-codecommit-code'
+# ~
+
+  CodeCommitRepository:
+    Type: AWS::CodeCommit::Repository
+    Properties:
+      Code:
+        S3:
+          Bucket: !Ref CodeCommitS3Bucket
+          Key: code.zip
+      RepositoryDescription: !Sub 'CodeCommit repository for ${AWS::StackName}'
+      RepositoryName: !Ref AWS::StackName
+
+  BuildEcrRepository:
+    Type: AWS::ECR::Repository
+    Properties:
+      RepositoryName: !Sub '${AWS::StackName}/build'
+
+  DeployEcrRepository:
+    Type: AWS::ECR::Repository
+    Properties:
+      RepositoryName: !Sub '${AWS::StackName}/deploy'
+
+  CloudWatchEventsServiceRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Action: ['sts:AssumeRole']
+            Effect: Allow
+            Principal:
+              Service: [events.amazonaws.com]
+      Description: !Sub 'Service role for Amazon CloudWatch Events for ${AWS::StackName}'
+      Path: /
+      Policies:
+        - PolicyName: CodePipelineAccess
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Action:
+                - codepipeline:StartPipelineExecution
+                Effect: Allow
+                Resource: !Sub 'arn:aws:codepipeline:${AWS::Region}:${AWS::AccountId}:${CodePipelinePipeline}'
+      RoleName: !Sub '${AWS::StackName}-cloudwatch-events-service-role'
+
+  CloudWatchEventsRule:
+    DependsOn: CloudWatchEventsServiceRole
+    Type: AWS::Events::Rule
+    Properties:
+      Description: !Sub 'CloudWatch Event rule for ${AWS::StackName}'
+      EventPattern:
+        source: [aws.codecommit]
+        detail-type: [CodeCommit Repository State Change]
+        resources: [!GetAtt CodeCommitRepository.Arn]
+        detail:
+          event:
+            - referenceCreated
+            - referenceUpdated
+          referenceType: [branch]
+          referenceName: [master]
+      Name: !Sub '${AWS::StackName}-cloudwatch-events-rule'
+      RoleArn: !GetAtt CloudWatchEventsServiceRole.Arn
+      State: ENABLED
+      Targets:
+        - Arn: !Sub 'arn:aws:codepipeline:${AWS::Region}:${AWS::AccountId}:${CodePipelinePipeline}'
+          Id: !Sub '${AWS::StackName}-cloudwatch-events-rule-target'
+          RoleArn: !GetAtt CloudWatchEventsServiceRole.Arn
+
+  ArtifactStoreS3Bucket:
+    Type: AWS::S3::Bucket
+    DeletionPolicy: Delete
+    Properties:
+      BucketName: !Sub '${AWS::StackName}-s3-artifact-store'
+
+  CodePipelineServiceRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Action: ['sts:AssumeRole']
+            Effect: Allow
+            Principal:
+              Service: [codepipeline.amazonaws.com]
+      Description: !Sub 'Service role for AWS CodePipeline for ${AWS::StackName}'
+      Path: /
+      Policies:
+        - PolicyName: CodeBuildFullAccess
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Action:
+                - codebuild:*
+                Effect: Allow
+                Resource:
+                  - !GetAtt DockerCodeBuildProject.Arn
+                  - !GetAtt BuildCodeBuildProject.Arn
+                  - !GetAtt DeployCodeBuildProject.Arn
+        - PolicyName: CodeCommitFullAccess
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Action:
+                - codecommit:*
+                Effect: Allow
+                Resource:
+                  - !GetAtt CodeCommitRepository.Arn
+        - PolicyName: S3FullAccess
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Action:
+                - s3:*
+                Effect: Allow
+                Resource:
+                  - !GetAtt ArtifactStoreS3Bucket.Arn
+                  - !Sub '${ArtifactStoreS3Bucket.Arn}/*'
+      RoleName: !Sub '${AWS::StackName}-codepipeline-service-role'
+
+  CodePipelinePipeline:
+    DependsOn:
+      - CodeCommitRepository
+      - DockerCodeBuildProject
+      - BuildCodeBuildProject
+      - DeployCodeBuildProject
+    Type: AWS::CodePipeline::Pipeline
+    Properties:
+      ArtifactStore:
+          Location: !Ref ArtifactStoreS3Bucket
+          Type: S3
+      Name: !Sub '${AWS::StackName}-codepipeline-pipeline'
+      RestartExecutionOnUpdate: false
+      RoleArn: !GetAtt CodePipelineServiceRole.Arn
+      Stages:
+        - Name: Source
+          Actions:
+            - ActionTypeId:
+                Category: Source
+                Owner: AWS
+                Provider: CodeCommit
+                Version: 1
+              Configuration:
+                BranchName: master
+                PollForSourceChanges: false
+                RepositoryName: !GetAtt CodeCommitRepository.Name
+              Name: Source
+              OutputArtifacts:
+                - Name: SOURCE
+              Region: !Ref AWS::Region
+              RunOrder: 1
+        - Name: Docker
+          Actions:
+            - ActionTypeId:
+                Category: Build
+                Owner: AWS
+                Provider: CodeBuild
+                Version: 1
+              Configuration:
+                ProjectName: !Ref DockerCodeBuildProject
+              InputArtifacts:
+                - Name: SOURCE
+              Name: Docker
+              Region: !Ref AWS::Region
+              RunOrder: 1
+        - Name: Build
+          Actions:
+            - ActionTypeId:
+                Category: Build
+                Owner: AWS
+                Provider: CodeBuild
+                Version: 1
+              Configuration:
+                ProjectName: !Ref BuildCodeBuildProject
+              InputArtifacts:
+                - Name: SOURCE
+              Name: Build
+              OutputArtifacts:
+                - Name: BUILD_ARTIFACT
+              Region: !Ref AWS::Region
+              RunOrder: 1
+        - Name: Deploy
+          Actions:
+            - ActionTypeId:
+                Category: Build
+                Owner: AWS
+                Provider: CodeBuild
+                Version: 1
+              Configuration:
+                ProjectName: !Ref DeployCodeBuildProject
+                PrimarySource: SOURCE
+              InputArtifacts:
+                - Name: SOURCE
+                - Name: BUILD_ARTIFACT
+              Name: Deploy
+              Region: !Ref AWS::Region
+              RunOrder: 1
+
+  ServerlessIamPolicy:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Action:
+            - cloudformation:Get*
+            - cloudformation:List*
+            - cloudformation:ValidateTemplate
+            Effect: Allow
+            Resource: '*'
+          - Action:
+            - cloudformation:CreateStack
+            - cloudformation:CreateUploadBucket
+            - cloudformation:DeleteStack
+            - cloudformation:Describe*
+            - cloudformation:UpdateStack
+            Effect: Allow
+            Resource: !Sub 'arn:aws:cloudformation:${AWS::Region}:${AWS::AccountId}:stack/*'
+          - Action:
+            - lambda:CreateFunction
+            - lambda:Get*
+            - lambda:List*
+            Effect: Allow
+            Resource: '*'
+          - Action:
+            - s3:CreateBucket
+            - s3:DeleteBucket
+            - s3:DeleteObject
+            - s3:GetBucketLocation
+            - s3:GetEncryptionConfiguration
+            - s3:GetObject
+            - s3:ListBucket
+            - s3:ListBucketVersions
+            - s3:PutAccelerateConfiguration
+            - s3:PutBucketPolicy
+            - s3:PutEncryptionConfiguration
+            - s3:PutObject
+            Effect: Allow
+            Resource: !Sub 'arn:aws:s3:::*'
+          - Action:
+            - lambda:AddPermission
+            - lambda:CreateAlias
+            - lambda:DeleteFunction
+            - lambda:InvokeFunction
+            - lambda:PublishVersion
+            - lambda:RemovePermission
+            - lambda:Update*
+            Effect: Allow
+            Resource: !Sub 'arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:*'
+          - Action:
+            - apigateway:DELETE
+            - apigateway:GET
+            - apigateway:PATCH
+            - apigateway:POST
+            - apigateway:PUT
+            Effect: Allow
+            Resource:
+            - !Sub 'arn:aws:apigateway:${AWS::Region}::/apikeys*'
+            - !Sub 'arn:aws:apigateway:${AWS::Region}::/restapis*'
+            - !Sub 'arn:aws:apigateway:${AWS::Region}::/usageplans*'
+          - Action:
+            - iam:PassRole
+            Effect: Allow
+            Resource: !Sub 'arn:aws:iam::${AWS::AccountId}:role/*'
+          - Action:
+            - iam:CreateRole
+            - iam:DeleteRole
+            - iam:DeleteRolePolicy
+            - iam:GetRole
+            - iam:PutRolePolicy
+            Effect: Allow
+            Resource: !Sub 'arn:aws:iam::${AWS::AccountId}:role/*'
+          - Action:
+            - logs:DescribeLogGroups
+            - logs:DescribeLogStreams
+            - logs:FilterLogEvents
+            Effect: Allow
+            Resource: '*'
+          - Action:
+            - logs:CreateLogGroup
+            - logs:CreateLogStream
+            - logs:DeleteLogGroup
+            - logs:PutLogEvents
+            Effect: Allow
+            Resource: !Sub 'arn:aws:logs:${AWS::Region}:${AWS::AccountId}:*'
+      PolicyName: !Sub '${AWS::StackName}-serverless-policy'
+      Roles:
+        - !Ref CodeBuildServiceRole
+
+  CodeBuildServiceRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Action: ['sts:AssumeRole']
+            Effect: Allow
+            Principal:
+              Service: [codebuild.amazonaws.com]
+      Description: !Sub 'Service role for AWS CodeBuild for ${AWS::StackName}'
+      Path: /
+      Policies:
+        - PolicyName: EcrFullAccess
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Action:
+                - ecr:*
+                Effect: Allow
+                Resource: '*'
+        - PolicyName: S3FullAccess
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Action:
+                - s3:*
+                Effect: Allow
+                Resource:
+                  - !GetAtt ArtifactStoreS3Bucket.Arn
+                  - !Sub '${ArtifactStoreS3Bucket.Arn}/*'
+        - PolicyName: CloudWatchLogsAccess
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Action:
+                - logs:CreateLogGroup
+                - logs:CreateLogStream
+                - logs:DeleteLogGroup
+                - logs:PutLogEvents
+                Effect: Allow
+                Resource: !Sub 'arn:aws:logs:${AWS::Region}:${AWS::AccountId}:*'
+      RoleName: !Sub '${AWS::StackName}-codebuild-service-role'
+
+  DockerCodeBuildProject:
+    Type: AWS::CodeBuild::Project
+    Properties:
+      Artifacts:
+        Type: CODEPIPELINE
+      Description: !Sub 'CodeBuild project for building and pushing ${AWS::StackName} Docker images'
+      Environment:
+        ComputeType: BUILD_GENERAL1_SMALL
+        EnvironmentVariables:
+          - Name: AWS_ACCOUNT_ID
+            Value: !Ref AWS::AccountId
+            Type: PLAINTEXT
+          - Name: AWS_REGION
+            Value: !Ref AWS::Region
+            Type: PLAINTEXT
+          - Name: BUILD_IMAGE_REPOSITORY
+            Value: !Ref BuildEcrRepository
+            Type: PLAINTEXT
+          - Name: DEPLOY_IMAGE_REPOSITORY
+            Value: !Ref DeployEcrRepository
+            Type: PLAINTEXT
+        Image: aws/codebuild/standard:2.0
+        ImagePullCredentialsType: CODEBUILD
+        PrivilegedMode: true
+        Type: LINUX_CONTAINER
+      Name: !Sub '${AWS::StackName}-docker'
+      QueuedTimeoutInMinutes: 60
+      ServiceRole: !Ref CodeBuildServiceRole
+      Source:
+        BuildSpec: 'codebuild/docker/buildspec.yml'
+        GitCloneDepth: 1
+        Type: CODEPIPELINE
+      TimeoutInMinutes: 60
+
+  BuildCodeBuildProject:
+    Type: AWS::CodeBuild::Project
+    Properties:
+      Artifacts:
+        Type: CODEPIPELINE
+      Description: !Sub 'CodeBuild project for testing and building ${AWS::StackName}'
+      Environment:
+        ComputeType: BUILD_GENERAL1_SMALL
+        Image: !Sub '${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/${BuildEcrRepository}:latest'
+        ImagePullCredentialsType: SERVICE_ROLE
+        PrivilegedMode: false
+        Type: LINUX_CONTAINER
+      Name: !Sub '${AWS::StackName}-build'
+      QueuedTimeoutInMinutes: 60
+      ServiceRole: !Ref CodeBuildServiceRole
+      Source:
+        BuildSpec: codebuild/build/buildspec.yml
+        GitCloneDepth: 1
+        Type: CODEPIPELINE
+      TimeoutInMinutes: 60
+
+  DeployCodeBuildProject:
+    Type: AWS::CodeBuild::Project
+    Properties:
+      Artifacts:
+        Type: CODEPIPELINE
+      Description: !Sub 'CodeBuild project for deploying ${AWS::StackName}'
+      Environment:
+        ComputeType: BUILD_GENERAL1_SMALL
+        Image: !Sub '${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/${DeployEcrRepository}:latest'
+        ImagePullCredentialsType: SERVICE_ROLE
+        PrivilegedMode: false
+        Type: LINUX_CONTAINER
+      Name: !Sub '${AWS::StackName}-deploy'
+      QueuedTimeoutInMinutes: 60
+      ServiceRole: !Ref CodeBuildServiceRole
+      Source:
+        BuildSpec: codebuild/deploy/buildspec.yml
+        GitCloneDepth: 1
+        Type: CODEPIPELINE
+      TimeoutInMinutes: 60

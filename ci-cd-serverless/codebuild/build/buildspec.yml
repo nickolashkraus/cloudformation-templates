@@ -1,0 +1,14 @@
+version: 0.2
+
+phases:
+  build:
+    commands:
+      - make test
+  post_build:
+    commands:
+      - make package-lambda
+artifacts:
+  files:
+    - lambda.zip
+  name: BUILD_ARTIFACT
+  discard-paths: yes

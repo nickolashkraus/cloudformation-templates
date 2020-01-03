@@ -1,0 +1,42 @@
+version: 0.2
+
+phases:
+  install:
+    runtime-versions:
+      docker: 18
+  pre_build:
+    commands:
+      - echo "Logging in to Amazon ECR..."
+      - $(aws ecr get-login --no-include-email --region $AWS_REGION)
+  build:
+    commands:
+      - BUILD_SOURCE_IMAGE="$BUILD_IMAGE_REPOSITORY"
+      - BUILD_TARGET_IMAGE="$AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$BUILD_IMAGE_REPOSITORY"
+      - DEPLOY_SOURCE_IMAGE="$DEPLOY_IMAGE_REPOSITORY"
+      - DEPLOY_TARGET_IMAGE="$AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$DEPLOY_IMAGE_REPOSITORY"
+        # CODEBUILD_RESOLVED_SOURCE_VERSION: An identifier for the version of a
+        # build's source code. Its format depends on the source code
+        # repository:
+        #   - For CodePipeline, the source revision is provided by
+        #     CodePipeline. For CodePipeline, the
+        #     CODEBUILD_RESOLVED_SOURCE_VERSION environment variable may not
+        #     always be available.
+      - IMAGE_TAG="$CODEBUILD_RESOLVED_SOURCE_VERSION"
+      - echo "Build started:" `date "+%Y-%m-%dT%H:%M:%S"`
+      - echo "Building the 'Build' Docker image..."
+      - docker build -f codebuild/build/Dockerfile -t $BUILD_IMAGE_REPOSITORY:$IMAGE_TAG .
+      - docker tag $BUILD_SOURCE_IMAGE:$IMAGE_TAG $BUILD_TARGET_IMAGE:$IMAGE_TAG
+      - docker tag $BUILD_SOURCE_IMAGE:$IMAGE_TAG $BUILD_TARGET_IMAGE:latest
+      - echo "Building the 'Deploy' Docker image..."
+      - docker build -f codebuild/deploy/Dockerfile -t $DEPLOY_IMAGE_REPOSITORY:$IMAGE_TAG .
+      - docker tag $DEPLOY_SOURCE_IMAGE:$IMAGE_TAG $DEPLOY_TARGET_IMAGE:$IMAGE_TAG
+      - docker tag $DEPLOY_SOURCE_IMAGE:$IMAGE_TAG $DEPLOY_TARGET_IMAGE:latest
+  post_build:
+    commands:
+      - echo "Build completed:" `date "+%Y-%m-%dT%H:%M:%S"`
+      - echo "Pushing the 'Build' Docker image..."
+      - docker push $BUILD_TARGET_IMAGE:$IMAGE_TAG
+      - docker push $BUILD_TARGET_IMAGE:latest
+      - echo "Pushing the 'Deploy' Docker image..."
+      - docker push $DEPLOY_TARGET_IMAGE:$IMAGE_TAG
+      - docker push $DEPLOY_TARGET_IMAGE:latest
