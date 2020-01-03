@@ -40,7 +40,7 @@ This is handled transparently by `make cfn-deploy`.
 make cfn-delete
 ```
 
-**Note**: S3 objects and Amazon ECR images must be removed before the CloudFormation stack can be deleted.
+**Note**: S3 objects must be removed before the CloudFormation stack can be deleted.
 
 This is handled transparently by `make cfn-delete`.
 
