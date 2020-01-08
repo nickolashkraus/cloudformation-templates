@@ -1,6 +1,6 @@
 # Static Website Hugo
 
-**Note**: The Terraform version of this CloudFormation stack can be found at [here](https://github.com/infrable-io/terraform-aws-static-website/tree/master/examples/static-website-hugo).
+**Note**: The Terraform version of this CloudFormation stack can be found [here](https://github.com/infrable-io/terraform-aws-static-website/tree/master/examples/static-website-hugo).
 
 ## Prerequisites
 
