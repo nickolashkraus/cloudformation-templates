@@ -25,5 +25,5 @@ API_GATEWAY_ID=$(aws apigateway get-rest-apis --query 'items[?name==`lambda-api`
 ```bash
 http -v POST \
 https://$API_GATEWAY_ID.execute-api.us-east-1.amazonaws.com/v0/lambda \
-Content-Type:application/json \
+Content-Type:application/json
 ```
