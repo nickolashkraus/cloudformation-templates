@@ -27,10 +27,3 @@ https://$API_GATEWAY_ID.execute-api.us-east-1.amazonaws.com/v0/mock \
 Content-Type:application/json \
 statusCode:=200
 ```
-
-```bash
-http -v POST \
-https://$API_GATEWAY_ID.execute-api.us-east-1.amazonaws.com/v0/mock \
-Content-Type:application/json \
-statusCode:=200
-```
