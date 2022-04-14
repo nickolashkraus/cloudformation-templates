@@ -1,7 +1,7 @@
 # CloudFormation Templates
 
-[![MIT License](https://img.shields.io/github/license/NickolasHKraus/cloudformation-templates?color=blue)](https://github.com/NickolasHKraus/cloudformation-templates/blob/master/LICENSE)
-![Status](https://img.shields.io/static/v1?label=status&message=maintenance&color=blueviolet)
+[![MIT License](https://img.shields.io/badge/License-MIT-blue.svg)](https://github.com/NickolasHKraus/cloudformation-templates/blob/master/LICENSE)
+![Status](https://img.shields.io/static/v1?label=Status&message=Maintenance&color=blueviolet)
 
 A collection of CloudFormation templates.
 
