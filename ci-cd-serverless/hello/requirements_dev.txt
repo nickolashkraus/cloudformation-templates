@@ -1,5 +1,5 @@
 bumpversion==0.5.3
-codecov==2.0.15
+codecov==2.0.16
 coverage==4.5.4
 flake8==3.7.8
 isort==4.3.21
