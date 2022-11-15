@@ -16,10 +16,10 @@ googleAnalytics = ""
 
 [[params.social]]
   email = "0x@nickolaskraus.io"
-  github = "https://github.com/NickolasHKraus"
+  github = "https://github.com/nickolashkraus"
   linkedin = "https://linkedin.com/in/nickolas-kraus"
   stackoverflow = "https://stackoverflow.com/users/9659079/nickolashkraus"
-  twitter = "https://twitter.com/NickolasHKraus"
+  twitter = "https://twitter.com/nickolashkraus"
 
 [[menu.main]]
     name = "About"
