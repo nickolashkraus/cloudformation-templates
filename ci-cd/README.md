@@ -2,7 +2,7 @@
 
 ## Prerequisites
 
-* Set the CloudFormation stack name:
+- Set the CloudFormation stack name:
 
 ```bash
 STACK_NAME=ci-cd

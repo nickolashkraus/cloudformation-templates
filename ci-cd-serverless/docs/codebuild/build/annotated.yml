@@ -14,28 +14,28 @@ version: 0.2
 # Optional. Represents information for one or more custom environment
 # variables.
 # env:
-  # Required if env is specified, and you want to define custom environment
-  # variables in plain text.
-  # variables:
-  #   key: 'value'
-  #   key: 'value'
-  # Required if env is specified, and you want to retrieve custom environment
-  # variables stored in Amazon EC2 Systems Manager Parameter Store.
-  # parameter-store:
-  #   key: 'value'
-  #   key: 'value'
-  # Optional. Used to indicate if CodeBuild uses its Git credential helper to
-  # provide Git credentials.
-  # git-credential-helper: yes
+# Required if env is specified, and you want to define custom environment
+# variables in plain text.
+# variables:
+#   key: 'value'
+#   key: 'value'
+# Required if env is specified, and you want to retrieve custom environment
+# variables stored in Amazon EC2 Systems Manager Parameter Store.
+# parameter-store:
+#   key: 'value'
+#   key: 'value'
+# Optional. Used to indicate if CodeBuild uses its Git credential helper to
+# provide Git credentials.
+# git-credential-helper: yes
 # Optional. Used to represent settings if you run your build in an explicit
 # proxy server.
 # proxy:
-  # Optional. Set to yes if you want your build in an explicit proxy server to
-  # upload artifacts. The default is no.
-  # upload-artifacts: yes
-  # Optional. Set to yes for your build in an explicit proxy server to create
-  # CloudWatch logs. The default is no.
-  # logs: yes
+# Optional. Set to yes if you want your build in an explicit proxy server to
+# upload artifacts. The default is no.
+# upload-artifacts: yes
+# Optional. Set to yes for your build in an explicit proxy server to create
+# CloudWatch logs. The default is no.
+# logs: yes
 # Required. Represents the commands CodeBuild runs during each phase of the
 # build.
 #
@@ -50,40 +50,40 @@ phases:
   # Optional. Represents the commands, if any, that CodeBuild runs during
   # installation.
   # install:
-    # Optional. Use in a build phase to specify a Linux user that runs its
-    # commands. If run-as is also specified globally for all commands at the
-    # top of the build spec file, then the phase-level user takes precedence.
-    # run-as: root
-    # Required if using the Ubuntu standard image 2.0 or later, or the Amazon
-    # Linux (AL2) standard image 1.0 or later. A runtime version is not
-    # supported with a custom image or the Ubuntu standard image 1.0.
-    # If you use the Ubuntu standard image 2.0 or later, or the Amazon Linux 2
-    # (AL2) standard image 1.0 or later, you must specify runtime-versions in
-    # your buildspec file.
-    # runtime-versions:
-      # runtime: version
-      # runtime: version
-    # Required sequence unless you specify runtime-versions.
-    # commands:
-    #   - command
-    #   - command
-    # Optional. Commands specified in a finally block are executed after
-    # commands in the commands block. The commands in a finally block are
-    # executed even if a command in the commands block fails.
-    # finally:
-    #   - command
-    #   - command
+  # Optional. Use in a build phase to specify a Linux user that runs its
+  # commands. If run-as is also specified globally for all commands at the
+  # top of the build spec file, then the phase-level user takes precedence.
+  # run-as: root
+  # Required if using the Ubuntu standard image 2.0 or later, or the Amazon
+  # Linux (AL2) standard image 1.0 or later. A runtime version is not
+  # supported with a custom image or the Ubuntu standard image 1.0.
+  # If you use the Ubuntu standard image 2.0 or later, or the Amazon Linux 2
+  # (AL2) standard image 1.0 or later, you must specify runtime-versions in
+  # your buildspec file.
+  # runtime-versions:
+  # runtime: version
+  # runtime: version
+  # Required sequence unless you specify runtime-versions.
+  # commands:
+  #   - command
+  #   - command
+  # Optional. Commands specified in a finally block are executed after
+  # commands in the commands block. The commands in a finally block are
+  # executed even if a command in the commands block fails.
+  # finally:
+  #   - command
+  #   - command
   # Optional. Represents the commands, if any, that CodeBuild runs before the
   # build.
   # pre_build:
-    # run-as: Linux-user-name
-    # Required sequence if pre_build is specified.
-    # commands:
-    #   - command
-    #   - command
-    # finally:
-    #   - command
-    #   - command
+  # run-as: Linux-user-name
+  # Required sequence if pre_build is specified.
+  # commands:
+  #   - command
+  #   - command
+  # finally:
+  #   - command
+  #   - command
   # Optional. Represents the commands, if any, that CodeBuild runs during the
   # build.
   build:
@@ -146,7 +146,7 @@ artifacts:
 # for uploading cache to an Amazon S3 cache bucket.
 # This sequence is not required if the cache type of the project is `No Cache`.
 # cache:
-  # Required. Represents the locations of the cache.
-  # paths:
-  #   - path
-  #   - path
+# Required. Represents the locations of the cache.
+# paths:
+#   - path
+#   - path

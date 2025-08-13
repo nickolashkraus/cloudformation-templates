@@ -1,15 +1,14 @@
-AWSTemplateFormatVersion: '2010-09-09'
+AWSTemplateFormatVersion: "2010-09-09"
 
 Description: CI/CD
 
 Resources:
-
   CodeCommitS3Bucket:
     Type: AWS::S3::Bucket
     DeletionPolicy: Delete
     Properties:
-      BucketName: !Sub '${AWS::StackName}-s3-codecommit-code'
-# ~
+      BucketName: !Sub "${AWS::StackName}-s3-codecommit-code"
+  # ~
 
   CodeCommitRepository:
     Type: AWS::CodeCommit::Repository
@@ -18,7 +17,7 @@ Resources:
         S3:
           Bucket: !Ref CodeCommitS3Bucket
           Key: code.zip
-      RepositoryDescription: !Sub 'CodeCommit repository for ${AWS::StackName}'
+      RepositoryDescription: !Sub "CodeCommit repository for ${AWS::StackName}"
       RepositoryName: !Ref AWS::StackName
 
   CloudWatchEventsServiceRole:
@@ -27,11 +26,11 @@ Resources:
       AssumeRolePolicyDocument:
         Version: 2012-10-17
         Statement:
-          - Action: ['sts:AssumeRole']
+          - Action: ["sts:AssumeRole"]
             Effect: Allow
             Principal:
               Service: [events.amazonaws.com]
-      Description: !Sub 'Service role for Amazon CloudWatch Events for ${AWS::StackName}'
+      Description: !Sub "Service role for Amazon CloudWatch Events for ${AWS::StackName}"
       Path: /
       Policies:
         - PolicyName: CodePipelineAccess
@@ -39,16 +38,16 @@ Resources:
             Version: 2012-10-17
             Statement:
               - Action:
-                - codepipeline:StartPipelineExecution
+                  - codepipeline:StartPipelineExecution
                 Effect: Allow
-                Resource: !Sub 'arn:aws:codepipeline:${AWS::Region}:${AWS::AccountId}:${CodePipelinePipeline}'
-      RoleName: !Sub '${AWS::StackName}-cloudwatch-events-service-role'
+                Resource: !Sub "arn:aws:codepipeline:${AWS::Region}:${AWS::AccountId}:${CodePipelinePipeline}"
+      RoleName: !Sub "${AWS::StackName}-cloudwatch-events-service-role"
 
   CloudWatchEventsRule:
     DependsOn: CloudWatchEventsServiceRole
     Type: AWS::Events::Rule
     Properties:
-      Description: !Sub 'CloudWatch Event rule for ${AWS::StackName}'
+      Description: !Sub "CloudWatch Event rule for ${AWS::StackName}"
       EventPattern:
         source: [aws.codecommit]
         detail-type: [CodeCommit Repository State Change]
@@ -59,19 +58,19 @@ Resources:
             - referenceUpdated
           referenceType: [branch]
           referenceName: [master]
-      Name: !Sub '${AWS::StackName}-cloudwatch-events-rule'
+      Name: !Sub "${AWS::StackName}-cloudwatch-events-rule"
       RoleArn: !GetAtt CloudWatchEventsServiceRole.Arn
       State: ENABLED
       Targets:
-        - Arn: !Sub 'arn:aws:codepipeline:${AWS::Region}:${AWS::AccountId}:${CodePipelinePipeline}'
-          Id: !Sub '${AWS::StackName}-cloudwatch-events-rule-target'
+        - Arn: !Sub "arn:aws:codepipeline:${AWS::Region}:${AWS::AccountId}:${CodePipelinePipeline}"
+          Id: !Sub "${AWS::StackName}-cloudwatch-events-rule-target"
           RoleArn: !GetAtt CloudWatchEventsServiceRole.Arn
 
   ArtifactStoreS3Bucket:
     Type: AWS::S3::Bucket
     DeletionPolicy: Delete
     Properties:
-      BucketName: !Sub '${AWS::StackName}-s3-artifact-store'
+      BucketName: !Sub "${AWS::StackName}-s3-artifact-store"
 
   CodePipelineServiceRole:
     Type: AWS::IAM::Role
@@ -79,11 +78,11 @@ Resources:
       AssumeRolePolicyDocument:
         Version: 2012-10-17
         Statement:
-          - Action: ['sts:AssumeRole']
+          - Action: ["sts:AssumeRole"]
             Effect: Allow
             Principal:
               Service: [codepipeline.amazonaws.com]
-      Description: !Sub 'Service role for AWS CodePipeline for ${AWS::StackName}'
+      Description: !Sub "Service role for AWS CodePipeline for ${AWS::StackName}"
       Path: /
       Policies:
         - PolicyName: CodeBuildFullAccess
@@ -91,7 +90,7 @@ Resources:
             Version: 2012-10-17
             Statement:
               - Action:
-                - codebuild:*
+                  - codebuild:*
                 Effect: Allow
                 Resource:
                   - !GetAtt CodeBuildProject.Arn
@@ -100,7 +99,7 @@ Resources:
             Version: 2012-10-17
             Statement:
               - Action:
-                - codecommit:*
+                  - codecommit:*
                 Effect: Allow
                 Resource:
                   - !GetAtt CodeCommitRepository.Arn
@@ -109,12 +108,12 @@ Resources:
             Version: 2012-10-17
             Statement:
               - Action:
-                - s3:*
+                  - s3:*
                 Effect: Allow
                 Resource:
                   - !GetAtt ArtifactStoreS3Bucket.Arn
-                  - !Sub '${ArtifactStoreS3Bucket.Arn}/*'
-      RoleName: !Sub '${AWS::StackName}-codepipeline-service-role'
+                  - !Sub "${ArtifactStoreS3Bucket.Arn}/*"
+      RoleName: !Sub "${AWS::StackName}-codepipeline-service-role"
 
   CodePipelinePipeline:
     DependsOn:
@@ -123,9 +122,9 @@ Resources:
     Type: AWS::CodePipeline::Pipeline
     Properties:
       ArtifactStore:
-          Location: !Ref ArtifactStoreS3Bucket
-          Type: S3
-      Name: !Sub '${AWS::StackName}-codepipeline-pipeline'
+        Location: !Ref ArtifactStoreS3Bucket
+        Type: S3
+      Name: !Sub "${AWS::StackName}-codepipeline-pipeline"
       RestartExecutionOnUpdate: false
       RoleArn: !GetAtt CodePipelineServiceRole.Arn
       Stages:
@@ -166,11 +165,11 @@ Resources:
       AssumeRolePolicyDocument:
         Version: 2012-10-17
         Statement:
-          - Action: ['sts:AssumeRole']
+          - Action: ["sts:AssumeRole"]
             Effect: Allow
             Principal:
               Service: [codebuild.amazonaws.com]
-      Description: !Sub 'Service role for AWS CodeBuild for ${AWS::StackName}'
+      Description: !Sub "Service role for AWS CodeBuild for ${AWS::StackName}"
       Path: /
       Policies:
         - PolicyName: S3FullAccess
@@ -178,37 +177,37 @@ Resources:
             Version: 2012-10-17
             Statement:
               - Action:
-                - s3:*
+                  - s3:*
                 Effect: Allow
                 Resource:
                   - !GetAtt ArtifactStoreS3Bucket.Arn
-                  - !Sub '${ArtifactStoreS3Bucket.Arn}/*'
+                  - !Sub "${ArtifactStoreS3Bucket.Arn}/*"
         - PolicyName: CloudWatchLogsAccess
           PolicyDocument:
             Version: 2012-10-17
             Statement:
               - Action:
-                - logs:CreateLogGroup
-                - logs:CreateLogStream
-                - logs:DeleteLogGroup
-                - logs:PutLogEvents
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:DeleteLogGroup
+                  - logs:PutLogEvents
                 Effect: Allow
-                Resource: !Sub 'arn:aws:logs:${AWS::Region}:${AWS::AccountId}:*'
-      RoleName: !Sub '${AWS::StackName}-codebuild-service-role'
+                Resource: !Sub "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:*"
+      RoleName: !Sub "${AWS::StackName}-codebuild-service-role"
 
   CodeBuildProject:
     Type: AWS::CodeBuild::Project
     Properties:
       Artifacts:
         Type: CODEPIPELINE
-      Description: !Sub 'CodeBuild project for testing and building ${AWS::StackName}'
+      Description: !Sub "CodeBuild project for testing and building ${AWS::StackName}"
       Environment:
         ComputeType: BUILD_GENERAL1_SMALL
         Image: aws/codebuild/standard:2.0
         ImagePullCredentialsType: CODEBUILD
         PrivilegedMode: false
         Type: LINUX_CONTAINER
-      Name: !Sub '${AWS::StackName}-build'
+      Name: !Sub "${AWS::StackName}-build"
       QueuedTimeoutInMinutes: 60
       ServiceRole: !Ref CodeBuildServiceRole
       Source:
@@ -216,4 +215,3 @@ Resources:
         GitCloneDepth: 1
         Type: CODEPIPELINE
       TimeoutInMinutes: 60
-

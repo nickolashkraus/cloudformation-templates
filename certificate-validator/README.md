@@ -2,7 +2,7 @@
 
 ## Prerequisites
 
-* Set the Amazon Resource Name (ARN) of the custom resource in `certificate-validator/parameters.json` or `certificate-validator/parameters.properties`.
+- Set the Amazon Resource Name (ARN) of the custom resource in `certificate-validator/parameters.json` or `certificate-validator/parameters.properties`.
 
 **Example**
 
@@ -21,9 +21,9 @@ ServiceToken=arn:aws:lambda:<region>:<account-id>:function:<function-name>
 
 **Note**: The service token must be in the same region as the CloudFormation stack.
 
-* Set the domain name purchased through AWS in `certificate-validator/parameters.json` or `certificate-validator/parameters.properties`.
+- Set the domain name purchased through AWS in `certificate-validator/parameters.json` or `certificate-validator/parameters.properties`.
 
-* Set a CloudFormation stack name:
+- Set a CloudFormation stack name:
 
 ```bash
 STACK_NAME=<stack-name>

@@ -2,7 +2,7 @@
 
 ## Prerequisites
 
-* Create an EC2 Key Pair:
+- Create an EC2 Key Pair:
 
 ```bash
 ./docker-registry-ec2/create-key-pair.sh <key-name>
@@ -12,7 +12,7 @@
 
 The key name should also be updated in `docker-registry-ec2/parameters.json` or `docker-registry-ec2/parameters.properties`.
 
-* Set a CloudFormation stack name:
+- Set a CloudFormation stack name:
 
 ```bash
 STACK_NAME=<stack-name>
@@ -45,7 +45,7 @@ aws cloudformation deploy \
 
 ## Testing
 
-* Testing SSH:
+- Testing SSH:
 
 ```bash
 EC2_PUBLIC_DNS=$(aws cloudformation describe-stacks \
@@ -58,7 +58,7 @@ EC2_PUBLIC_DNS=$(aws cloudformation describe-stacks \
 ssh -i docker-registry-ec2/docker-registry-ec2.pem ec2-user@$EC2_PUBLIC_DNS
 ```
 
-* Testing the Docker Registry:
+- Testing the Docker Registry:
 
 In order to log in to the Docker Registry, you will need to add the registry to your list of insecure registries.
 

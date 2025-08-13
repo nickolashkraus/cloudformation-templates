@@ -2,7 +2,7 @@
 
 ## Prerequisites
 
-* Create an EC2 Key Pair:
+- Create an EC2 Key Pair:
 
 ```bash
 ./lamp-asg/create-key-pair.sh <key-name>
@@ -12,7 +12,7 @@
 
 The key name should also be updated in `lamp-asg/parameters.json` or `lamp-asg/parameters.properties`.
 
-* Set a CloudFormation stack name:
+- Set a CloudFormation stack name:
 
 ```bash
 STACK_NAME=<stack-name>
@@ -45,7 +45,7 @@ aws cloudformation deploy \
 
 ## Testing
 
-* Testing SSH:
+- Testing SSH:
 
 ```bash
 ASG_ID=$(aws cloudformation describe-stacks \
@@ -85,7 +85,7 @@ ssh -i lamp-asg/lamp-asg.pem ec2-user@$EC2_PUBLIC_DNS[...]
 
 **Note**: To become root, execute `sudo -i`.
 
-* Testing web server:
+- Testing web server:
 
 ```bash
 ALB_PUBLIC_DNS=$(aws cloudformation describe-stacks \

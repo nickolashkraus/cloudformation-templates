@@ -1,4 +1,4 @@
-AWSTemplateFormatVersion: '2010-09-09'
+AWSTemplateFormatVersion: "2010-09-09"
 
 Description: |
   A highly available, scalable Docker Registry with Application Load Balancer
@@ -279,73 +279,71 @@ Mappings:
       HVM64: ami-01e24be29428c15b2
       HVMG2: ami-0fe84a5b4563d8f27
 
-
 Outputs:
   ASGId:
     Description: Logical ID of the Auto Scaling Group resource
     Value: !Ref DockerRegistryAutoScalingGroup
   ALBPublicDNS:
     Description: Public DNS for the Application Load Balancer
-    Value: !Sub '${ElasticLoadBalancingV2LoadBalancer.DNSName}'
+    Value: !Sub "${ElasticLoadBalancingV2LoadBalancer.DNSName}"
 
 Parameters:
-
   InstanceType:
     AllowedValues:
-    - t1.micro
-    - t2.nano
-    - t2.micro
-    - t2.small
-    - t2.medium
-    - t2.large
-    - m1.small
-    - m1.medium
-    - m1.large
-    - m1.xlarge
-    - m2.xlarge
-    - m2.2xlarge
-    - m2.4xlarge
-    - m3.medium
-    - m3.large
-    - m3.xlarge
-    - m3.2xlarge
-    - m4.large
-    - m4.xlarge
-    - m4.2xlarge
-    - m4.4xlarge
-    - m4.10xlarge
-    - c1.medium
-    - c1.xlarge
-    - c3.large
-    - c3.xlarge
-    - c3.2xlarge
-    - c3.4xlarge
-    - c3.8xlarge
-    - c4.large
-    - c4.xlarge
-    - c4.2xlarge
-    - c4.4xlarge
-    - c4.8xlarge
-    - g2.2xlarge
-    - g2.8xlarge
-    - r3.large
-    - r3.xlarge
-    - r3.2xlarge
-    - r3.4xlarge
-    - r3.8xlarge
-    - i2.xlarge
-    - i2.2xlarge
-    - i2.4xlarge
-    - i2.8xlarge
-    - d2.xlarge
-    - d2.2xlarge
-    - d2.4xlarge
-    - d2.8xlarge
-    - hi1.4xlarge
-    - hs1.8xlarge
-    - cr1.8xlarge
-    - cc2.8xlarge
-    - cg1.4xlarge
+      - t1.micro
+      - t2.nano
+      - t2.micro
+      - t2.small
+      - t2.medium
+      - t2.large
+      - m1.small
+      - m1.medium
+      - m1.large
+      - m1.xlarge
+      - m2.xlarge
+      - m2.2xlarge
+      - m2.4xlarge
+      - m3.medium
+      - m3.large
+      - m3.xlarge
+      - m3.2xlarge
+      - m4.large
+      - m4.xlarge
+      - m4.2xlarge
+      - m4.4xlarge
+      - m4.10xlarge
+      - c1.medium
+      - c1.xlarge
+      - c3.large
+      - c3.xlarge
+      - c3.2xlarge
+      - c3.4xlarge
+      - c3.8xlarge
+      - c4.large
+      - c4.xlarge
+      - c4.2xlarge
+      - c4.4xlarge
+      - c4.8xlarge
+      - g2.2xlarge
+      - g2.8xlarge
+      - r3.large
+      - r3.xlarge
+      - r3.2xlarge
+      - r3.4xlarge
+      - r3.8xlarge
+      - i2.xlarge
+      - i2.2xlarge
+      - i2.4xlarge
+      - i2.8xlarge
+      - d2.xlarge
+      - d2.2xlarge
+      - d2.4xlarge
+      - d2.8xlarge
+      - hi1.4xlarge
+      - hs1.8xlarge
+      - cr1.8xlarge
+      - cc2.8xlarge
+      - cg1.4xlarge
     ConstraintDescription: must be a valid EC2 instance type.
     Default: t2.small
     Description: WebServer EC2 instance type
@@ -355,19 +353,19 @@ Parameters:
     Description: Name of an existing EC2 KeyPair to enable SSH access to the instances
     Type: AWS::EC2::KeyPair::KeyName
 
-
   SSHLocation:
     AllowedPattern: (\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})/(\d{1,2})
     ConstraintDescription: Must be a valid IPv4 CIDR range of the form x.x.x.x/x.
     Default: 0.0.0.0/0
     Description: The IP address range that can be used to SSH to the EC2 instances
-    MaxLength: '18'
-    MinLength: '9'
+    MaxLength: "18"
+    MinLength: "9"
     Type: String
 
   Subnets:
-    Type: 'List<AWS::EC2::Subnet::Id>'
-    ConstraintDescription: Must be a list of at least two existing subnets associated
+    Type: "List<AWS::EC2::Subnet::Id>"
+    ConstraintDescription:
+      Must be a list of at least two existing subnets associated
       with at least two different availability zones. They should reside in the
       selected Virtual Private Cloud.
     Description: The list of Subnet IDs in your Virtual Private Cloud (VPC)
@@ -379,14 +377,13 @@ Parameters:
 
   WebServerCapacity:
     ConstraintDescription: Must be between 1 and 5 EC2 instances.
-    Default: '1'
+    Default: "1"
     Description: The initial number of EC2 instances
-    MaxValue: '5'
-    MinValue: '1'
+    MaxValue: "5"
+    MinValue: "1"
     Type: Number
 
 Resources:
-
   ElasticLoadBalancingV2LoadBalancer:
     Type: AWS::ElasticLoadBalancingV2::LoadBalancer
     Properties:
@@ -398,8 +395,8 @@ Resources:
     Type: AWS::ElasticLoadBalancingV2::Listener
     Properties:
       DefaultActions:
-      - TargetGroupArn: !Ref ElasticLoadBalancingV2TargetGroup
-        Type: forward
+        - TargetGroupArn: !Ref ElasticLoadBalancingV2TargetGroup
+          Type: forward
       LoadBalancerArn: !Ref ElasticLoadBalancingV2LoadBalancer
       Port: 80
       Protocol: HTTP
@@ -414,12 +411,12 @@ Resources:
       Port: 5043
       Protocol: HTTPS
       TargetGroupAttributes:
-      - Key: stickiness.enabled
-        Value: true
-      - Key: stickiness.type
-        Value: lb_cookie
-      - Key: stickiness.lb_cookie.duration_seconds
-        Value: 30
+        - Key: stickiness.enabled
+          Value: true
+        - Key: stickiness.type
+          Value: lb_cookie
+        - Key: stickiness.lb_cookie.duration_seconds
+          Value: 30
       TargetType: instance
       UnhealthyThresholdCount: 5
       VpcId: !Ref VpcId
@@ -429,10 +426,10 @@ Resources:
     Properties:
       GroupDescription: Enable HTTP access
       SecurityGroupIngress:
-      - CidrIp: 0.0.0.0/0
-        FromPort: 80
-        IpProtocol: tcp
-        ToPort: 80
+        - CidrIp: 0.0.0.0/0
+          FromPort: 80
+          IpProtocol: tcp
+          ToPort: 80
 
   LaunchConfig:
     Type: AWS::AutoScaling::LaunchConfiguration
@@ -448,7 +445,7 @@ Resources:
                 [main]
                 stack=${AWS::StackId}
                 region=${AWS::Region}
-              mode: '000400'
+              mode: "000400"
               owner: root
               group: root
             /etc/cfn/hooks.d/cfn-auto-reloader.conf:
@@ -458,7 +455,7 @@ Resources:
                 path=Resources.LaunchConfig.Metadata.AWS::CloudFormation::Init
                 action=/opt/aws/bin/cfn-init -v --stack ${AWS::StackName} --resource LaunchConfig --region ${AWS::Region}
                 runas=root
-              mode: '000400'
+              mode: "000400"
               owner: root
               group: root
             /etc/init/docker-registry.conf:
@@ -472,7 +469,7 @@ Resources:
                 respawn
 
                 exec /docker-registry/run.sh
-              mode: '000400'
+              mode: "000400"
               owner: root
               group: root
             /docker-registry/docker-compose.yml:
@@ -496,7 +493,7 @@ Resources:
                     - 127.0.0.1:5000:5000
                   volumes:
                     - ./data:/var/lib/registry
-              mode: '000400'
+              mode: "000400"
               owner: root
               group: root
             /docker-registry/nginx.conf:
@@ -581,7 +578,7 @@ Resources:
                     }
                   }
                 }
-              mode: '000400'
+              mode: "000400"
               owner: root
               group: root
             /docker-registry/run.sh:
@@ -623,7 +620,7 @@ Resources:
                   -f $DOCKER_REGISTRY/docker-compose.yml \
                   -p docker-registry \
                   up
-              mode: '000500'
+              mode: "000500"
               owner: root
               group: root
           commands:
@@ -652,20 +649,23 @@ Resources:
                 ensureRunning: true
     Properties:
       ImageId:
-        !FindInMap [AWSRegionArch2AMI, !Ref 'AWS::Region', !FindInMap [AWSInstanceType2Arch, !Ref 'InstanceType', Arch]]
+        !FindInMap [
+          AWSRegionArch2AMI,
+          !Ref "AWS::Region",
+          !FindInMap [AWSInstanceType2Arch, !Ref "InstanceType", Arch],
+        ]
       InstanceType: !Ref InstanceType
       KeyName: !Ref KeyName
       SecurityGroups:
         - !Ref DockerRegistrySecurityGroup
       UserData:
-        Fn::Base64:
-          !Sub |
-            #!/bin/bash -xe
-            yum update -y aws-cfn-bootstrap
-            # install the files and packages from the metadata
-            /opt/aws/bin/cfn-init -v --stack ${AWS::StackName} --resource LaunchConfig --region ${AWS::Region}
-            # signal the status from cfn-init
-            /opt/aws/bin/cfn-signal -e $? --stack ${AWS::StackName} --resource DockerRegistryAutoScalingGroup --region ${AWS::Region}
+        Fn::Base64: !Sub |
+          #!/bin/bash -xe
+          yum update -y aws-cfn-bootstrap
+          # install the files and packages from the metadata
+          /opt/aws/bin/cfn-init -v --stack ${AWS::StackName} --resource LaunchConfig --region ${AWS::Region}
+          # signal the status from cfn-init
+          /opt/aws/bin/cfn-signal -e $? --stack ${AWS::StackName} --resource DockerRegistryAutoScalingGroup --region ${AWS::Region}
 
   DockerRegistryAutoScalingGroup:
     Type: AWS::AutoScaling::AutoScalingGroup
@@ -693,13 +693,16 @@ Resources:
     Properties:
       GroupDescription: Enable HTTP access from the ALB and SSH access
       SecurityGroupIngress:
-      - FromPort: 5043
-        IpProtocol: tcp
-        SourceSecurityGroupId:
-          !Select [ 0, !GetAtt ElasticLoadBalancingV2LoadBalancer.SecurityGroups ]
-        ToPort: 5043
-      - CidrIp: !Ref SSHLocation
-        FromPort: 22
-        IpProtocol: tcp
-        ToPort: 22
+        - FromPort: 5043
+          IpProtocol: tcp
+          SourceSecurityGroupId:
+            !Select [
+              0,
+              !GetAtt ElasticLoadBalancingV2LoadBalancer.SecurityGroups,
+            ]
+          ToPort: 5043
+        - CidrIp: !Ref SSHLocation
+          FromPort: 22
+          IpProtocol: tcp
+          ToPort: 22
       VpcId: !Ref VpcId

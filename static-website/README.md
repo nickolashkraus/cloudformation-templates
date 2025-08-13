@@ -4,7 +4,7 @@
 
 ## Prerequisites
 
-* Set the domain name purchased through AWS.
+- Set the domain name purchased through AWS.
 
 ```bash
 DOMAIN_NAME=<domain-name>
@@ -12,7 +12,7 @@ DOMAIN_NAME=<domain-name>
 
 The domain name should also be updated in `static-website/parameters.json` or `static-website/parameters.properties`.
 
-* Set a CloudFormation stack name:
+- Set a CloudFormation stack name:
 
 ```bash
 STACK_NAME=<stack-name>

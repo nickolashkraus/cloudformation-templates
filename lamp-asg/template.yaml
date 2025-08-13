@@ -1,4 +1,4 @@
-AWSTemplateFormatVersion: '2010-09-09'
+AWSTemplateFormatVersion: "2010-09-09"
 
 Description: |
   A highly available, scalable LAMP stack with an Amazon RDS database,
@@ -284,139 +284,138 @@ Outputs:
     Value: !Ref WebServerGroup
   WebsiteURL:
     Description: Website URL for the Auto Scaling Group
-    Value: !Sub 'http://${ElasticLoadBalancingV2LoadBalancer.DNSName}'
+    Value: !Sub "http://${ElasticLoadBalancingV2LoadBalancer.DNSName}"
 
 Parameters:
-
   DBAllocatedStorage:
     ConstraintDescription: Must be between 5 and 1024Gb.
-    Default: '5'
+    Default: "5"
     Description: Size of the database (Gb)
-    MaxValue: '1024'
-    MinValue: '5'
+    MaxValue: "1024"
+    MinValue: "5"
     Type: Number
 
   DBInstanceClass:
     AllowedValues:
-    - db.t1.micro
-    - db.m1.small
-    - db.m1.medium
-    - db.m1.large
-    - db.m1.xlarge
-    - db.m2.xlarge
-    - db.m2.2xlarge
-    - db.m2.4xlarge
-    - db.m3.medium
-    - db.m3.large
-    - db.m3.xlarge
-    - db.m3.2xlarge
-    - db.m4.large
-    - db.m4.xlarge
-    - db.m4.2xlarge
-    - db.m4.4xlarge
-    - db.m4.10xlarge
-    - db.r3.large
-    - db.r3.xlarge
-    - db.r3.2xlarge
-    - db.r3.4xlarge
-    - db.r3.8xlarge
-    - db.m2.xlarge
-    - db.m2.2xlarge
-    - db.m2.4xlarge
-    - db.cr1.8xlarge
-    - db.t2.micro
-    - db.t2.small
-    - db.t2.medium
-    - db.t2.large
+      - db.t1.micro
+      - db.m1.small
+      - db.m1.medium
+      - db.m1.large
+      - db.m1.xlarge
+      - db.m2.xlarge
+      - db.m2.2xlarge
+      - db.m2.4xlarge
+      - db.m3.medium
+      - db.m3.large
+      - db.m3.xlarge
+      - db.m3.2xlarge
+      - db.m4.large
+      - db.m4.xlarge
+      - db.m4.2xlarge
+      - db.m4.4xlarge
+      - db.m4.10xlarge
+      - db.r3.large
+      - db.r3.xlarge
+      - db.r3.2xlarge
+      - db.r3.4xlarge
+      - db.r3.8xlarge
+      - db.m2.xlarge
+      - db.m2.2xlarge
+      - db.m2.4xlarge
+      - db.cr1.8xlarge
+      - db.t2.micro
+      - db.t2.small
+      - db.t2.medium
+      - db.t2.large
     ConstraintDescription: Must select a valid database instance type.
     Default: db.t2.small
     Description: Database instance type
     Type: String
 
   DBName:
-    AllowedPattern: '[a-zA-Z][a-zA-Z0-9]*'
+    AllowedPattern: "[a-zA-Z][a-zA-Z0-9]*"
     ConstraintDescription: Must begin with a letter and contain only alphanumeric characters.
     Default: database
     Description: Name of MySQL database
-    MaxLength: '64'
-    MinLength: '1'
+    MaxLength: "64"
+    MinLength: "1"
     Type: String
 
   DBPassword:
-    AllowedPattern: '[a-zA-Z0-9]*'
+    AllowedPattern: "[a-zA-Z0-9]*"
     ConstraintDescription: Must contain only alphanumeric characters.
     Description: Password for MySQL database
-    MaxLength: '32'
-    MinLength: '1'
+    MaxLength: "32"
+    MinLength: "1"
     NoEcho: true
     Type: String
 
   DBUser:
-    AllowedPattern: '[a-zA-Z][a-zA-Z0-9]*'
+    AllowedPattern: "[a-zA-Z][a-zA-Z0-9]*"
     ConstraintDescription: Must begin with a letter and contain only alphanumeric characters.
     Default: dbuser
     Description: Username for MySQL database
-    MaxLength: '16'
-    MinLength: '1'
+    MaxLength: "16"
+    MinLength: "1"
     NoEcho: true
     Type: String
 
   InstanceType:
     AllowedValues:
-    - t1.micro
-    - t2.nano
-    - t2.micro
-    - t2.small
-    - t2.medium
-    - t2.large
-    - m1.small
-    - m1.medium
-    - m1.large
-    - m1.xlarge
-    - m2.xlarge
-    - m2.2xlarge
-    - m2.4xlarge
-    - m3.medium
-    - m3.large
-    - m3.xlarge
-    - m3.2xlarge
-    - m4.large
-    - m4.xlarge
-    - m4.2xlarge
-    - m4.4xlarge
-    - m4.10xlarge
-    - c1.medium
-    - c1.xlarge
-    - c3.large
-    - c3.xlarge
-    - c3.2xlarge
-    - c3.4xlarge
-    - c3.8xlarge
-    - c4.large
-    - c4.xlarge
-    - c4.2xlarge
-    - c4.4xlarge
-    - c4.8xlarge
-    - g2.2xlarge
-    - g2.8xlarge
-    - r3.large
-    - r3.xlarge
-    - r3.2xlarge
-    - r3.4xlarge
-    - r3.8xlarge
-    - i2.xlarge
-    - i2.2xlarge
-    - i2.4xlarge
-    - i2.8xlarge
-    - d2.xlarge
-    - d2.2xlarge
-    - d2.4xlarge
-    - d2.8xlarge
-    - hi1.4xlarge
-    - hs1.8xlarge
-    - cr1.8xlarge
-    - cc2.8xlarge
-    - cg1.4xlarge
+      - t1.micro
+      - t2.nano
+      - t2.micro
+      - t2.small
+      - t2.medium
+      - t2.large
+      - m1.small
+      - m1.medium
+      - m1.large
+      - m1.xlarge
+      - m2.xlarge
+      - m2.2xlarge
+      - m2.4xlarge
+      - m3.medium
+      - m3.large
+      - m3.xlarge
+      - m3.2xlarge
+      - m4.large
+      - m4.xlarge
+      - m4.2xlarge
+      - m4.4xlarge
+      - m4.10xlarge
+      - c1.medium
+      - c1.xlarge
+      - c3.large
+      - c3.xlarge
+      - c3.2xlarge
+      - c3.4xlarge
+      - c3.8xlarge
+      - c4.large
+      - c4.xlarge
+      - c4.2xlarge
+      - c4.4xlarge
+      - c4.8xlarge
+      - g2.2xlarge
+      - g2.8xlarge
+      - r3.large
+      - r3.xlarge
+      - r3.2xlarge
+      - r3.4xlarge
+      - r3.8xlarge
+      - i2.xlarge
+      - i2.2xlarge
+      - i2.4xlarge
+      - i2.8xlarge
+      - d2.xlarge
+      - d2.2xlarge
+      - d2.4xlarge
+      - d2.8xlarge
+      - hi1.4xlarge
+      - hs1.8xlarge
+      - cr1.8xlarge
+      - cc2.8xlarge
+      - cg1.4xlarge
     ConstraintDescription: must be a valid EC2 instance type.
     Default: t2.small
     Description: WebServer EC2 instance type
@@ -428,8 +427,8 @@ Parameters:
 
   MultiAZDatabase:
     AllowedValues:
-    - true
-    - false
+      - true
+      - false
     ConstraintDescription: Must be either true or false.
     Default: false
     Description: Create a Multi-AZ MySQL Amazon RDS database instance
@@ -440,13 +439,14 @@ Parameters:
     ConstraintDescription: Must be a valid IPv4 CIDR range of the form x.x.x.x/x.
     Default: 0.0.0.0/0
     Description: The IP address range that can be used to SSH to the EC2 instances
-    MaxLength: '18'
-    MinLength: '9'
+    MaxLength: "18"
+    MinLength: "9"
     Type: String
 
   Subnets:
-    Type: 'List<AWS::EC2::Subnet::Id>'
-    ConstraintDescription: Must be a list of at least two existing subnets associated
+    Type: "List<AWS::EC2::Subnet::Id>"
+    ConstraintDescription:
+      Must be a list of at least two existing subnets associated
       with at least two different availability zones. They should reside in the
       selected Virtual Private Cloud.
     Description: The list of Subnet IDs in your Virtual Private Cloud (VPC)
@@ -458,14 +458,13 @@ Parameters:
 
   WebServerCapacity:
     ConstraintDescription: Must be between 1 and 5 EC2 instances.
-    Default: '3'
+    Default: "3"
     Description: The initial number of EC2 instances
-    MaxValue: '5'
-    MinValue: '1'
+    MaxValue: "5"
+    MinValue: "1"
     Type: Number
 
 Resources:
-
   ElasticLoadBalancingV2LoadBalancer:
     Type: AWS::ElasticLoadBalancingV2::LoadBalancer
     Properties:
@@ -477,8 +476,8 @@ Resources:
     Type: AWS::ElasticLoadBalancingV2::Listener
     Properties:
       DefaultActions:
-      - TargetGroupArn: !Ref ElasticLoadBalancingV2TargetGroup
-        Type: forward
+        - TargetGroupArn: !Ref ElasticLoadBalancingV2TargetGroup
+          Type: forward
       LoadBalancerArn: !Ref ElasticLoadBalancingV2LoadBalancer
       Port: 80
       Protocol: HTTP
@@ -492,12 +491,12 @@ Resources:
       Port: 80
       Protocol: HTTP
       TargetGroupAttributes:
-      - Key: stickiness.enabled
-        Value: true
-      - Key: stickiness.type
-        Value: lb_cookie
-      - Key: stickiness.lb_cookie.duration_seconds
-        Value: 30
+        - Key: stickiness.enabled
+          Value: true
+        - Key: stickiness.type
+          Value: lb_cookie
+        - Key: stickiness.lb_cookie.duration_seconds
+          Value: 30
       UnhealthyThresholdCount: 5
       VpcId: !Ref VpcId
 
@@ -506,20 +505,20 @@ Resources:
     Properties:
       GroupDescription: Enable HTTP access
       SecurityGroupIngress:
-      - CidrIp: 0.0.0.0/0
-        FromPort: 80
-        IpProtocol: tcp
-        ToPort: 80
+        - CidrIp: 0.0.0.0/0
+          FromPort: 80
+          IpProtocol: tcp
+          ToPort: 80
 
   DBEC2SecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
       GroupDescription: Allow database access on port 3306
       SecurityGroupIngress:
-      - FromPort: 3306
-        IpProtocol: tcp
-        SourceSecurityGroupId: !Ref WebServerSecurityGroup
-        ToPort: 3306
+        - FromPort: 3306
+          IpProtocol: tcp
+          SourceSecurityGroupId: !Ref WebServerSecurityGroup
+          ToPort: 3306
       VpcId: !Ref VpcId
 
   LaunchConfig:
@@ -538,7 +537,7 @@ Resources:
                 [main]
                 stack=${AWS::StackId}
                 region=${AWS::Region}
-              mode: '000400'
+              mode: "000400"
               owner: root
               group: root
             /etc/cfn/hooks.d/cfn-auto-reloader.conf:
@@ -548,7 +547,7 @@ Resources:
                 path=Resources.LaunchConfig.Metadata.AWS::CloudFormation::Init
                 action=/opt/aws/bin/cfn-init -v --stack ${AWS::StackName} --resource LaunchConfig --region ${AWS::Region}
                 runas=root
-              mode: '000400'
+              mode: "000400"
               owner: root
               group: root
             /var/www/html/index.php:
@@ -607,7 +606,7 @@ Resources:
                     ?>
                   </body>
                 </html>
-              mode: '000600'
+              mode: "000600"
               owner: apache
               group: apache
           services:
@@ -623,20 +622,23 @@ Resources:
                 ensureRunning: true
     Properties:
       ImageId:
-        !FindInMap [AWSRegionArch2AMI, !Ref 'AWS::Region', !FindInMap [AWSInstanceType2Arch, !Ref 'InstanceType', Arch]]
+        !FindInMap [
+          AWSRegionArch2AMI,
+          !Ref "AWS::Region",
+          !FindInMap [AWSInstanceType2Arch, !Ref "InstanceType", Arch],
+        ]
       InstanceType: !Ref InstanceType
       KeyName: !Ref KeyName
       SecurityGroups:
         - !Ref WebServerSecurityGroup
       UserData:
-        Fn::Base64:
-          !Sub |
-            #!/bin/bash -xe
-            yum update -y aws-cfn-bootstrap
-            # install the files and packages from the metadata
-            /opt/aws/bin/cfn-init -v --stack ${AWS::StackName} --resource LaunchConfig --region ${AWS::Region}
-            # signal the status from cfn-init
-            /opt/aws/bin/cfn-signal -e $? --stack ${AWS::StackName} --resource WebServerGroup --region ${AWS::Region}
+        Fn::Base64: !Sub |
+          #!/bin/bash -xe
+          yum update -y aws-cfn-bootstrap
+          # install the files and packages from the metadata
+          /opt/aws/bin/cfn-init -v --stack ${AWS::StackName} --resource LaunchConfig --region ${AWS::Region}
+          # signal the status from cfn-init
+          /opt/aws/bin/cfn-signal -e $? --stack ${AWS::StackName} --resource WebServerGroup --region ${AWS::Region}
 
   MySQLDatabase:
     Type: AWS::RDS::DBInstance
@@ -677,13 +679,16 @@ Resources:
     Properties:
       GroupDescription: Enable HTTP access from the ALB and SSH access
       SecurityGroupIngress:
-      - FromPort: 80
-        IpProtocol: tcp
-        SourceSecurityGroupId:
-          !Select [ 0, !GetAtt ElasticLoadBalancingV2LoadBalancer.SecurityGroups ]
-        ToPort: 80
-      - CidrIp: !Ref SSHLocation
-        FromPort: 22
-        IpProtocol: tcp
-        ToPort: 22
+        - FromPort: 80
+          IpProtocol: tcp
+          SourceSecurityGroupId:
+            !Select [
+              0,
+              !GetAtt ElasticLoadBalancingV2LoadBalancer.SecurityGroups,
+            ]
+          ToPort: 80
+        - CidrIp: !Ref SSHLocation
+          FromPort: 22
+          IpProtocol: tcp
+          ToPort: 22
       VpcId: !Ref VpcId

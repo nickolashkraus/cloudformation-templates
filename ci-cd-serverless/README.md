@@ -2,7 +2,7 @@
 
 ## Prerequisites
 
-* Set the CloudFormation stack name:
+- Set the CloudFormation stack name:
 
 ```bash
 STACK_NAME=ci-cd-serverless
@@ -48,17 +48,17 @@ This is handled transparently by `make cfn-delete`.
 
 The following files:
 
-* `cloudformation/template.yaml`
-* `codebuild/build/buildspec.yml`
-* `codebuild/deploy/buildspec.yml`
-* `codebuild/docker/buildspec.yml`
+- `cloudformation/template.yaml`
+- `codebuild/build/buildspec.yml`
+- `codebuild/deploy/buildspec.yml`
+- `codebuild/docker/buildspec.yml`
 
 are generated using:
 
-* `docs/cloudformation/annotated.yaml`
-* `docs/codebuild/build/annotated.yml`
-* `docs/codebuild/deploy/annotated.yml`
-* `docs/codebuild/docker/annotated.yml`
+- `docs/cloudformation/annotated.yaml`
+- `docs/codebuild/build/annotated.yml`
+- `docs/codebuild/deploy/annotated.yml`
+- `docs/codebuild/docker/annotated.yml`
 
 , respectively:
 

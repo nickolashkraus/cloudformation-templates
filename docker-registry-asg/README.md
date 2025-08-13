@@ -2,7 +2,7 @@
 
 ## Prerequisites
 
-* Create an EC2 Key Pair:
+- Create an EC2 Key Pair:
 
 ```bash
 ./docker-registry-asg/create-key-pair.sh <key-name>
@@ -12,7 +12,7 @@
 
 The key name should also be updated in `docker-registry-asg/parameters.json` or `docker-registry-asg/parameters.properties`.
 
-* Set a CloudFormation stack name:
+- Set a CloudFormation stack name:
 
 ```bash
 STACK_NAME=<stack-name>
@@ -45,7 +45,7 @@ aws cloudformation deploy \
 
 ## Testing
 
-* Testing SSH:
+- Testing SSH:
 
 ```bash
 ASG_ID=$(aws cloudformation describe-stacks \
@@ -85,7 +85,7 @@ ssh -i docker-registry-asg/docker-registry-asg.pem ec2-user@$EC2_PUBLIC_DNS[...]
 
 **Note**: To become root, execute `sudo -i`.
 
-* Testing the Docker Registry:
+- Testing the Docker Registry:
 
 In order to log in to the Docker Registry, you will need to add the registry to your list of insecure registries.
 

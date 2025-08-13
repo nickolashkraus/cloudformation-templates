@@ -2,7 +2,7 @@
 
 ## Prerequisites
 
-* Create an EC2 Key Pair:
+- Create an EC2 Key Pair:
 
 ```bash
 ./ec2/create-key-pair.sh <key-name>
@@ -12,7 +12,7 @@
 
 The key name should also be updated in `ec2/parameters.json` or `ec2/parameters.properties`.
 
-* Set a CloudFormation stack name:
+- Set a CloudFormation stack name:
 
 ```bash
 STACK_NAME=<stack-name>
@@ -45,7 +45,7 @@ aws cloudformation deploy \
 
 ## Testing
 
-* Testing SSH:
+- Testing SSH:
 
 ```bash
 EC2_PUBLIC_DNS=$(aws cloudformation describe-stacks \
@@ -58,7 +58,7 @@ EC2_PUBLIC_DNS=$(aws cloudformation describe-stacks \
 ssh -i ec2/ec2.pem ec2-user@$EC2_PUBLIC_DNS
 ```
 
-* Testing web server:
+- Testing web server:
 
 ```bash
 http -v http://$EC2_PUBLIC_DNS

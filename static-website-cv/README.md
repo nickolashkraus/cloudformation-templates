@@ -2,7 +2,7 @@
 
 ## Prerequisites
 
-* Set the domain name purchased through AWS.
+- Set the domain name purchased through AWS.
 
 ```bash
 DOMAIN_NAME=<domain-name>
@@ -10,7 +10,7 @@ DOMAIN_NAME=<domain-name>
 
 The domain name should also be updated in `static-website-cv/parameters.json` or `static-website-cv/parameters.properties`.
 
-* Set the Amazon Resource Name (ARN) of the custom resource in `static-website-cv/parameters.json` or `static-website-cv/parameters.properties`.
+- Set the Amazon Resource Name (ARN) of the custom resource in `static-website-cv/parameters.json` or `static-website-cv/parameters.properties`.
 
 **Example**
 
@@ -29,7 +29,7 @@ ServiceToken=arn:aws:lambda:<region>:<account-id>:function:<function-name>
 
 **Note**: The service token must be in the same region as the CloudFormation stack.
 
-* Set a CloudFormation stack name:
+- Set a CloudFormation stack name:
 
 ```bash
 STACK_NAME=<stack-name>

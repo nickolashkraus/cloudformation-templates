@@ -1,4 +1,4 @@
-AWSTemplateFormatVersion: '2010-09-09'
+AWSTemplateFormatVersion: "2010-09-09"
 
 Description: Certificate Validator
 
@@ -11,14 +11,13 @@ Parameters:
     Type: String
 
 Resources:
-
   Certificate:
     Type: Custom::Certificate
     Properties:
       ServiceToken: !Ref ServiceToken
       DomainName: !Ref DomainName
       SubjectAlternativeNames:
-        - !Sub 'www.${DomainName}'
+        - !Sub "www.${DomainName}"
 
   CertificateValidator:
     Type: Custom::CertificateValidator

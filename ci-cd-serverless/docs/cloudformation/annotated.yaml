@@ -1,9 +1,8 @@
-AWSTemplateFormatVersion: '2010-09-09'
+AWSTemplateFormatVersion: "2010-09-09"
 
 Description: CI/CD
 
 Resources:
-
   CodeCommitS3Bucket:
     # Reference:
     # [`AWS::S3::Bucket`][s3-bucket]
@@ -11,7 +10,7 @@ Resources:
     DeletionPolicy: Delete
     Properties:
       # Note: Amazon S3 bucket names must be globally unique.
-      BucketName: !Sub '${AWS::StackName}-s3-codecommit-code'
+      BucketName: !Sub "${AWS::StackName}-s3-codecommit-code"
 
   CodeCommitRepository:
     # Reference:
@@ -27,7 +26,7 @@ Resources:
           Bucket: !Ref CodeCommitS3Bucket
           Key: code.zip
           # ObjectVersion: String
-      RepositoryDescription: !Sub 'CodeCommit repository for ${AWS::StackName}'
+      RepositoryDescription: !Sub "CodeCommit repository for ${AWS::StackName}"
       RepositoryName: !Ref AWS::StackName
       # Tags:
       #   - Tag
@@ -51,7 +50,7 @@ Resources:
       # specified on its own (such as `nginx-web-app`) or it can be prepended
       # with a namespace to group the repository into a category (such as
       # `project-a/nginx-web-app`).
-      RepositoryName: !Sub '${AWS::StackName}/build'
+      RepositoryName: !Sub "${AWS::StackName}/build"
       # RepositoryPolicyText: Json
       # Tags:
       #   - Tag
@@ -67,7 +66,7 @@ Resources:
       # specified on its own (such as `nginx-web-app`) or it can be prepended
       # with a namespace to group the repository into a category (such as
       # `project-a/nginx-web-app`).
-      RepositoryName: !Sub '${AWS::StackName}/deploy'
+      RepositoryName: !Sub "${AWS::StackName}/deploy"
       # RepositoryPolicyText: Json
       # Tags:
       #   - Tag
@@ -82,11 +81,11 @@ Resources:
       AssumeRolePolicyDocument:
         Version: 2012-10-17
         Statement:
-          - Action: ['sts:AssumeRole']
+          - Action: ["sts:AssumeRole"]
             Effect: Allow
             Principal:
               Service: [events.amazonaws.com]
-      Description: !Sub 'Service role for Amazon CloudWatch Events for ${AWS::StackName}'
+      Description: !Sub "Service role for Amazon CloudWatch Events for ${AWS::StackName}"
       # ManagedPolicyArns:
       #   - String
       # The maximum session duration (in seconds) that you want to set for the
@@ -106,10 +105,10 @@ Resources:
             Version: 2012-10-17
             Statement:
               - Action:
-                - codepipeline:StartPipelineExecution
+                  - codepipeline:StartPipelineExecution
                 Effect: Allow
-                Resource: !Sub 'arn:aws:codepipeline:${AWS::Region}:${AWS::AccountId}:${CodePipelinePipeline}'
-      RoleName: !Sub '${AWS::StackName}-cloudwatch-events-service-role'
+                Resource: !Sub "arn:aws:codepipeline:${AWS::Region}:${AWS::AccountId}:${CodePipelinePipeline}"
+      RoleName: !Sub "${AWS::StackName}-cloudwatch-events-service-role"
       # Tags:
       #   - Tag
 
@@ -119,7 +118,7 @@ Resources:
     DependsOn: CloudWatchEventsServiceRole
     Type: AWS::Events::Rule
     Properties:
-      Description: !Sub 'CloudWatch Event rule for ${AWS::StackName}'
+      Description: !Sub "CloudWatch Event rule for ${AWS::StackName}"
       # EventBusName: String
       # Describes which events are routed to the specified target.
       # When using CloudFormation, you must enclose each part of the event
@@ -134,7 +133,7 @@ Resources:
             - referenceUpdated
           referenceType: [branch]
           referenceName: [master]
-      Name: !Sub '${AWS::StackName}-cloudwatch-events-rule'
+      Name: !Sub "${AWS::StackName}-cloudwatch-events-rule"
       # The Amazon Resource Name (ARN) of the role that is used for target
       # invocation.
       RoleArn: !GetAtt CloudWatchEventsServiceRole.Arn
@@ -146,11 +145,11 @@ Resources:
         # Reference:
         # [`AWS::Events::Rule Target`][events-rule-target]
         # The Amazon Resource Name (ARN) of the target.
-        - Arn: !Sub 'arn:aws:codepipeline:${AWS::Region}:${AWS::AccountId}:${CodePipelinePipeline}'
+        - Arn: !Sub "arn:aws:codepipeline:${AWS::Region}:${AWS::AccountId}:${CodePipelinePipeline}"
           # EcsParameters:
           #   EcsParameters
           # A name for the target.
-          Id: !Sub '${AWS::StackName}-cloudwatch-events-rule-target'
+          Id: !Sub "${AWS::StackName}-cloudwatch-events-rule-target"
           # Input: String
           # InputPath: String
           # InputTransformer:
@@ -172,7 +171,7 @@ Resources:
     DeletionPolicy: Delete
     Properties:
       # Note: Amazon S3 bucket names must be globally unique.
-      BucketName: !Sub '${AWS::StackName}-s3-artifact-store'
+      BucketName: !Sub "${AWS::StackName}-s3-artifact-store"
 
   CodePipelineServiceRole:
     # Reference:
@@ -184,11 +183,11 @@ Resources:
       AssumeRolePolicyDocument:
         Version: 2012-10-17
         Statement:
-          - Action: ['sts:AssumeRole']
+          - Action: ["sts:AssumeRole"]
             Effect: Allow
             Principal:
               Service: [codepipeline.amazonaws.com]
-      Description: !Sub 'Service role for AWS CodePipeline for ${AWS::StackName}'
+      Description: !Sub "Service role for AWS CodePipeline for ${AWS::StackName}"
       # ManagedPolicyArns:
       #   - String
       # The maximum session duration (in seconds) that you want to set for the
@@ -208,7 +207,7 @@ Resources:
             Version: 2012-10-17
             Statement:
               - Action:
-                - codebuild:*
+                  - codebuild:*
                 Effect: Allow
                 Resource:
                   - !GetAtt DockerCodeBuildProject.Arn
@@ -219,7 +218,7 @@ Resources:
             Version: 2012-10-17
             Statement:
               - Action:
-                - codecommit:*
+                  - codecommit:*
                 Effect: Allow
                 Resource:
                   - !GetAtt CodeCommitRepository.Arn
@@ -228,15 +227,15 @@ Resources:
             Version: 2012-10-17
             Statement:
               - Action:
-                - s3:*
+                  - s3:*
                 Effect: Allow
                 Resource:
                   - !GetAtt ArtifactStoreS3Bucket.Arn
                     # Note: Must specify object resource ARN for actions
                     # performed on S3 objects.
                     # Amazon S3 object ARN: arn:${Partition}:s3:::${BucketName}/${ObjectName}
-                  - !Sub '${ArtifactStoreS3Bucket.Arn}/*'
-      RoleName: !Sub '${AWS::StackName}-codepipeline-service-role'
+                  - !Sub "${ArtifactStoreS3Bucket.Arn}/*"
+      RoleName: !Sub "${AWS::StackName}-codepipeline-service-role"
       # Tags:
       #   - Tag
 
@@ -251,14 +250,14 @@ Resources:
     Type: AWS::CodePipeline::Pipeline
     Properties:
       ArtifactStore:
-          # If this is undefined, the default key for Amazon S3 is used.
-          # EncryptionKey:
-          #   EncryptionKey
-          Location: !Ref ArtifactStoreS3Bucket
-          Type: S3
+        # If this is undefined, the default key for Amazon S3 is used.
+        # EncryptionKey:
+        #   EncryptionKey
+        Location: !Ref ArtifactStoreS3Bucket
+        Type: S3
       # DisableInboundStageTransitions:
       #   - StageTransition
-      Name: !Sub '${AWS::StackName}-codepipeline-pipeline'
+      Name: !Sub "${AWS::StackName}-codepipeline-pipeline"
       RestartExecutionOnUpdate: false
       RoleArn: !GetAtt CodePipelineServiceRole.Arn
       Stages:
@@ -266,20 +265,20 @@ Resources:
           # Reference:
           # [`AWS::CodePipeline::Pipeline ActionDeclaration`][codepipeline-pipeline-stages-actions]
           Actions:
-              # An action type consists of an action category and provider
-              # type. The following are the valid action categories:
-              #   - Source
-              #   - Build
-              #   - Test
-              #   - Deploy
-              #   - Approval
-              #   - Invoke
-              # Each action category has a designated set of providers. A list
-              # of valid providers by action type can be found
-              # [here][codepipeline-actions-valid-providers].
-              #
-              # Reference:
-              # [`AWS::CodePipeline::Pipeline ActionTypeId`][codepipeline-action-type-id]
+            # An action type consists of an action category and provider
+            # type. The following are the valid action categories:
+            #   - Source
+            #   - Build
+            #   - Test
+            #   - Deploy
+            #   - Approval
+            #   - Invoke
+            # Each action category has a designated set of providers. A list
+            # of valid providers by action type can be found
+            # [here][codepipeline-actions-valid-providers].
+            #
+            # Reference:
+            # [`AWS::CodePipeline::Pipeline ActionTypeId`][codepipeline-action-type-id]
             - ActionTypeId:
                 Category: Source
                 Owner: AWS
@@ -457,95 +456,95 @@ Resources:
         Version: 2012-10-17
         Statement:
           - Action:
-            - cloudformation:Get*
-            - cloudformation:List*
-            - cloudformation:ValidateTemplate
+              - cloudformation:Get*
+              - cloudformation:List*
+              - cloudformation:ValidateTemplate
             Effect: Allow
-            Resource: '*'
+            Resource: "*"
           - Action:
-            - cloudformation:CreateStack
-            - cloudformation:CreateUploadBucket
-            - cloudformation:DeleteStack
-            - cloudformation:Describe*
-            - cloudformation:UpdateStack
+              - cloudformation:CreateStack
+              - cloudformation:CreateUploadBucket
+              - cloudformation:DeleteStack
+              - cloudformation:Describe*
+              - cloudformation:UpdateStack
             Effect: Allow
             # AWS CloudFormation stack ARN: arn:${Partition}:cloudformation:${Region}:${Account}:stack/${StackName}/${Id}
-            Resource: !Sub 'arn:aws:cloudformation:${AWS::Region}:${AWS::AccountId}:stack/*'
+            Resource: !Sub "arn:aws:cloudformation:${AWS::Region}:${AWS::AccountId}:stack/*"
           - Action:
-            - lambda:CreateFunction
-            - lambda:Get*
-            - lambda:List*
+              - lambda:CreateFunction
+              - lambda:Get*
+              - lambda:List*
             Effect: Allow
-            Resource: '*'
+            Resource: "*"
           - Action:
-            - s3:CreateBucket
-            - s3:DeleteBucket
-            - s3:DeleteObject
-            - s3:GetBucketLocation
-            - s3:GetEncryptionConfiguration
-            - s3:GetObject
-            - s3:ListBucket
-            - s3:ListBucketVersions
-            - s3:PutAccelerateConfiguration
-            - s3:PutBucketPolicy
-            - s3:PutEncryptionConfiguration
-            - s3:PutObject
+              - s3:CreateBucket
+              - s3:DeleteBucket
+              - s3:DeleteObject
+              - s3:GetBucketLocation
+              - s3:GetEncryptionConfiguration
+              - s3:GetObject
+              - s3:ListBucket
+              - s3:ListBucketVersions
+              - s3:PutAccelerateConfiguration
+              - s3:PutBucketPolicy
+              - s3:PutEncryptionConfiguration
+              - s3:PutObject
             Effect: Allow
             # Amazon S3 bucket ARN: arn:${Partition}:s3:::${BucketName}
-            Resource: !Sub 'arn:aws:s3:::*'
+            Resource: !Sub "arn:aws:s3:::*"
           - Action:
-            - lambda:AddPermission
-            - lambda:CreateAlias
-            - lambda:DeleteFunction
-            - lambda:InvokeFunction
-            - lambda:PublishVersion
-            - lambda:RemovePermission
-            - lambda:Update*
+              - lambda:AddPermission
+              - lambda:CreateAlias
+              - lambda:DeleteFunction
+              - lambda:InvokeFunction
+              - lambda:PublishVersion
+              - lambda:RemovePermission
+              - lambda:Update*
             Effect: Allow
             # AWS Lambda function ARN: arn:${Partition}:lambda:${Region}:${Account}:function:${FunctionName}
-            Resource: !Sub 'arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:*'
+            Resource: !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:*"
           - Action:
-            - apigateway:DELETE
-            - apigateway:GET
-            - apigateway:PATCH
-            - apigateway:POST
-            - apigateway:PUT
+              - apigateway:DELETE
+              - apigateway:GET
+              - apigateway:PATCH
+              - apigateway:POST
+              - apigateway:PUT
             Effect: Allow
             # Amazon API Gateway resource ARN: arn:${Partition}:apigateway:${Region}:${ResourePath}
             Resource:
-            - !Sub 'arn:aws:apigateway:${AWS::Region}::/apikeys*'
-            - !Sub 'arn:aws:apigateway:${AWS::Region}::/restapis*'
-            - !Sub 'arn:aws:apigateway:${AWS::Region}::/usageplans*'
+              - !Sub "arn:aws:apigateway:${AWS::Region}::/apikeys*"
+              - !Sub "arn:aws:apigateway:${AWS::Region}::/restapis*"
+              - !Sub "arn:aws:apigateway:${AWS::Region}::/usageplans*"
           - Action:
-            - iam:PassRole
+              - iam:PassRole
             Effect: Allow
             # AWS IAM role ARN: arn:${Partition}:iam::${Account}:role/${RoleNameWithPath}
-            Resource: !Sub 'arn:aws:iam::${AWS::AccountId}:role/*'
+            Resource: !Sub "arn:aws:iam::${AWS::AccountId}:role/*"
           - Action:
-            - iam:CreateRole
-            - iam:DeleteRole
-            - iam:DeleteRolePolicy
-            - iam:GetRole
-            - iam:PutRolePolicy
+              - iam:CreateRole
+              - iam:DeleteRole
+              - iam:DeleteRolePolicy
+              - iam:GetRole
+              - iam:PutRolePolicy
             Effect: Allow
             # AWS IAM role ARN: arn:${Partition}:iam::${Account}:role/${RoleNameWithPath}
-            Resource: !Sub 'arn:aws:iam::${AWS::AccountId}:role/*'
+            Resource: !Sub "arn:aws:iam::${AWS::AccountId}:role/*"
           - Action:
-            - logs:DescribeLogGroups
-            - logs:DescribeLogStreams
-            - logs:FilterLogEvents
+              - logs:DescribeLogGroups
+              - logs:DescribeLogStreams
+              - logs:FilterLogEvents
             Effect: Allow
-            Resource: '*'
+            Resource: "*"
           - Action:
-            - logs:CreateLogGroup
-            - logs:CreateLogStream
-            - logs:DeleteLogGroup
-            - logs:PutLogEvents
+              - logs:CreateLogGroup
+              - logs:CreateLogStream
+              - logs:DeleteLogGroup
+              - logs:PutLogEvents
             Effect: Allow
             # Amazon CloudWatch Logs log-group ARN: arn:${Partition}:logs:${Region}:${Account}:log-group:${LogGroupName}
             # Amazon CloudWatch Logs log-stream ARN: arn:${Partition}:logs:${Region}:${Account}:log-group:${LogGroupName}:log-stream:${LogStreamName}
-            Resource: !Sub 'arn:aws:logs:${AWS::Region}:${AWS::AccountId}:*'
-      PolicyName: !Sub '${AWS::StackName}-serverless-policy'
+            Resource: !Sub "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:*"
+      PolicyName: !Sub "${AWS::StackName}-serverless-policy"
       Roles:
         - !Ref CodeBuildServiceRole
 
@@ -559,11 +558,11 @@ Resources:
       AssumeRolePolicyDocument:
         Version: 2012-10-17
         Statement:
-          - Action: ['sts:AssumeRole']
+          - Action: ["sts:AssumeRole"]
             Effect: Allow
             Principal:
               Service: [codebuild.amazonaws.com]
-      Description: !Sub 'Service role for AWS CodeBuild for ${AWS::StackName}'
+      Description: !Sub "Service role for AWS CodeBuild for ${AWS::StackName}"
       # ManagedPolicyArns:
       #   - String
       # The maximum session duration (in seconds) that you want to set for the
@@ -583,34 +582,34 @@ Resources:
             Version: 2012-10-17
             Statement:
               - Action:
-                - ecr:*
+                  - ecr:*
                 Effect: Allow
-                Resource: '*'
+                Resource: "*"
         - PolicyName: S3FullAccess
           PolicyDocument:
             Version: 2012-10-17
             Statement:
               - Action:
-                - s3:*
+                  - s3:*
                 Effect: Allow
                 Resource:
                   - !GetAtt ArtifactStoreS3Bucket.Arn
                     # Note: Must specify object resource ARN for actions
                     # performed on S3 objects.
                     # Amazon S3 object ARN: arn:${Partition}:s3:::${BucketName}/${ObjectName}
-                  - !Sub '${ArtifactStoreS3Bucket.Arn}/*'
+                  - !Sub "${ArtifactStoreS3Bucket.Arn}/*"
         - PolicyName: CloudWatchLogsAccess
           PolicyDocument:
             Version: 2012-10-17
             Statement:
               - Action:
-                - logs:CreateLogGroup
-                - logs:CreateLogStream
-                - logs:DeleteLogGroup
-                - logs:PutLogEvents
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:DeleteLogGroup
+                  - logs:PutLogEvents
                 Effect: Allow
-                Resource: !Sub 'arn:aws:logs:${AWS::Region}:${AWS::AccountId}:*'
-      RoleName: !Sub '${AWS::StackName}-codebuild-service-role'
+                Resource: !Sub "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:*"
+      RoleName: !Sub "${AWS::StackName}-codebuild-service-role"
       # Tags:
       #   - Tag
 
@@ -677,7 +676,7 @@ Resources:
       # NO_CACHE.
       # Cache:
       #   ProjectCache
-      Description: !Sub 'CodeBuild project for building and pushing ${AWS::StackName} Docker images'
+      Description: !Sub "CodeBuild project for building and pushing ${AWS::StackName} Docker images"
       # The alias or Amazon Resource Name (ARN) of the AWS Key Management
       # Service (AWS KMS) customer master key (CMK) that CodeBuild uses to
       # encrypt the build output. If you don't specify a value, CodeBuild uses
@@ -746,7 +745,7 @@ Resources:
       #   LogsConfig
       # The name of the build project. The name must be unique across all of
       # the projects in your AWS account.
-      Name: !Sub '${AWS::StackName}-docker'
+      Name: !Sub "${AWS::StackName}-docker"
       # The number of minutes a build is allowed to be queued before it times
       # out.
       QueuedTimeoutInMinutes: 60
@@ -775,7 +774,7 @@ Resources:
         # either a single string containing the entire build specification, or
         # the path to an alternate buildspec file relative to the value of the
         # built-in environment variable CODEBUILD_SRC_DIR.
-        BuildSpec: 'codebuild/docker/buildspec.yml'
+        BuildSpec: "codebuild/docker/buildspec.yml"
         # The depth of history to download. Minimum value is 0. If this value
         # is 0, greater than 25, or not provided, then the full history is
         # downloaded with each build project.
@@ -876,7 +875,7 @@ Resources:
       # NO_CACHE.
       # Cache:
       #   ProjectCache
-      Description: !Sub 'CodeBuild project for testing and building ${AWS::StackName}'
+      Description: !Sub "CodeBuild project for testing and building ${AWS::StackName}"
       # The alias or Amazon Resource Name (ARN) of the AWS Key Management
       # Service (AWS KMS) customer master key (CMK) that CodeBuild uses to
       # encrypt the build output. If you don't specify a value, CodeBuild uses
@@ -904,7 +903,7 @@ Resources:
         # EnvironmentVariables:
         # The image tag or image digest that identifies the Docker image to use
         # for this build project.
-        Image: !Sub '${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/${BuildEcrRepository}:latest'
+        Image: !Sub "${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/${BuildEcrRepository}:latest"
         # The type of credentials AWS CodeBuild uses to pull images in your
         # build.
         #   - CODEBUILD specifies that AWS CodeBuild uses its own credentials.
@@ -933,7 +932,7 @@ Resources:
       #   LogsConfig
       # The name of the build project. The name must be unique across all of
       # the projects in your AWS account.
-      Name: !Sub '${AWS::StackName}-build'
+      Name: !Sub "${AWS::StackName}-build"
       # The number of minutes a build is allowed to be queued before it times
       # out.
       QueuedTimeoutInMinutes: 60
@@ -1061,7 +1060,7 @@ Resources:
       # NO_CACHE.
       # Cache:
       #   ProjectCache
-      Description: !Sub 'CodeBuild project for deploying ${AWS::StackName}'
+      Description: !Sub "CodeBuild project for deploying ${AWS::StackName}"
       # The alias or Amazon Resource Name (ARN) of the AWS Key Management
       # Service (AWS KMS) customer master key (CMK) that CodeBuild uses to
       # encrypt the build output. If you don't specify a value, CodeBuild uses
@@ -1089,7 +1088,7 @@ Resources:
         # EnvironmentVariables:
         # The image tag or image digest that identifies the Docker image to use
         # for this build project.
-        Image: !Sub '${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/${DeployEcrRepository}:latest'
+        Image: !Sub "${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/${DeployEcrRepository}:latest"
         # The type of credentials AWS CodeBuild uses to pull images in your
         # build.
         #   - CODEBUILD specifies that AWS CodeBuild uses its own credentials.
@@ -1118,7 +1117,7 @@ Resources:
       #   LogsConfig
       # The name of the build project. The name must be unique across all of
       # the projects in your AWS account.
-      Name: !Sub '${AWS::StackName}-deploy'
+      Name: !Sub "${AWS::StackName}-deploy"
       # The number of minutes a build is allowed to be queued before it times
       # out.
       QueuedTimeoutInMinutes: 60
